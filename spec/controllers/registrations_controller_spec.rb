@@ -246,11 +246,8 @@ describe RegistrationsController do
         before do
           get :index, :race_id => 99
         end
-        it 'sets flash error' do
-          expect(flash[:error]).to eq(I18n.t 'not_found')
-        end
-        it 'returns http success' do
-          expect(response).to be_success
+        it 'returns 404' do
+          expect(response.status).to eq(404)
         end
         it 'does not set @registrations' do
           expect(assigns(:registrations)).to be_empty
