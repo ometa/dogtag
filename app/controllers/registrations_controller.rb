@@ -2,6 +2,8 @@ class RegistrationsController < ApplicationController
   before_filter :require_user
   load_and_authorize_resource
 
+  respond_to :html, :csv
+
   def new
     unless params[:team_id]
       flash[:error] = I18n.t('must_select_team')

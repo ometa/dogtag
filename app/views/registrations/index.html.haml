@@ -4,6 +4,8 @@
     = t('.registrations_for', :name => @race.name)
     - if @registrations.any? && current_user.is_any_of?(:admin, :operator)
       %small
+        = link_to race_registrations_url(@race.id, :format => :csv) do
+          %i.fa.fa-floppy-o
         = mail_to @registrations.map(&:team).map(&:user).map(&:email).join(',') do
           %i.fa.fa-envelope
 
@@ -18,6 +20,8 @@
       = t('.waitlisted_registrations')
       - if current_user.is_any_of? :admin, :operator
         %small
+          = link_to race_registrations_url(@race.id, :format => :csv) do
+            %i.fa.fa-floppy-o
           = mail_to @waitlisted_registrations.map(&:team).map(&:user).map(&:email).join(',') do
             %i.fa.fa-envelope
     = render 'table', :registrations => @waitlisted_registrations
