@@ -30,8 +30,10 @@ class TeamsController < ApplicationController
     return render :status => 400 if params[:team].blank?
 
     @team = Team.new team_params
+
     @team.user = current_user
-    @team.race = Race.find(session[:signup_race_id] || params[:race_id])
+    race_id = params[:race_id] || session[:signup_race_id]
+    @team.race ||= Race.find(race_id)
 
     if @team.save
       flash.now[:notice] = I18n.t('create_success')

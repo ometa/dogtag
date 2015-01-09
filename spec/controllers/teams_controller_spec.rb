@@ -42,7 +42,6 @@ describe TeamsController do
 
   context '[logged in]' do
     let (:valid_user) { FactoryGirl.create :admin_user }
-
     before do
       activate_authlogic
       mock_login! valid_user
@@ -237,12 +236,8 @@ describe TeamsController do
       end
 
       context 'with invalid team parameters' do
-        let(:team_stub) do
-          _t = Team.new
-          _t.stub(:valid?) { false }
-          _t
-        end
         before do
+          team_stub = double('team', save: false).as_null_object
           allow(Team).to receive(:new).and_return team_stub
           post :create, :team => valid_team_hash
         end
@@ -253,7 +248,6 @@ describe TeamsController do
         it 'sets a flash notice' do
           expect(flash.now[:error]).to include(I18n.t 'create_failed')
           expect(flash.now[:error]).to_not be_nil
-          #expect(flash[:error].detect { |val| val.is_a? Hash }).to include param
          end
       end
     end
