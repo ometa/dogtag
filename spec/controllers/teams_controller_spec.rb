@@ -3,47 +3,40 @@ require 'spec_helper'
 describe TeamsController do
 
   context '[logged out]' do
-    describe '#index' do
+    shared_examples 'redirects to login' do
       it 'redirects to login' do
-        get :index
+        endpoint.call
         expect(response).to redirect_to(new_user_session_path)
       end
+    end
+
+    describe '#index' do
+      let(:endpoint) { lambda { get :index }}
+      include_examples 'redirects to login'
     end
     describe '#new' do
-      it 'redirects to login' do
-        get :new
-        expect(response).to redirect_to(new_user_session_path)
-      end
+      let(:endpoint) { lambda { get :new }}
+      include_examples 'redirects to login'
     end
     describe '#create' do
-      it 'redirects to login' do
-        post :create
-        expect(response).to redirect_to(new_user_session_path)
-      end
+      let(:endpoint) { lambda { post :create }}
+      include_examples 'redirects to login'
     end
     describe '#edit' do
-      it 'redirects to login' do
-        get :edit, :id => 1
-        expect(response).to redirect_to(new_user_session_path)
-      end
+      let(:endpoint) { lambda { get :edit, id: 1 }}
+      include_examples 'redirects to login'
     end
     describe '#update' do
-      it 'redirects to login' do
-        patch :update, :id => 1
-        expect(response).to redirect_to(new_user_session_path)
-      end
+      let(:endpoint) { lambda { patch :update, id: 1 }}
+      include_examples 'redirects to login'
     end
     describe '#show' do
-      it 'redirects to login' do
-        get :show, :id => 1
-        expect(response).to redirect_to(new_user_session_path)
-      end
+      let(:endpoint) { lambda { get :show, id: 1 }}
+      include_examples 'redirects to login'
     end
     describe '#destroy' do
-      it 'redirects to login' do
-        delete :destroy, :id => 1
-        expect(response).to redirect_to(new_user_session_path)
-      end
+      let(:endpoint) { lambda { delete :destroy, id: 1 }}
+      include_examples 'redirects to login'
     end
   end
 
