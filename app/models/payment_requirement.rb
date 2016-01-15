@@ -1,5 +1,6 @@
 class PaymentRequirement < Requirement
   has_many :tiers, :foreign_key => :requirement_id, :dependent => :delete_all
+  include Wisper.model
 
   def stripe_params(team)
     metadata = JSON.generate(

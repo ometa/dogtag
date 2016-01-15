@@ -1,4 +1,6 @@
 class Race < ActiveRecord::Base
+  include Wisper.model
+
   validates_presence_of :name, :max_teams, :people_per_team
   validates_presence_of :race_datetime, :registration_open, :registration_close
   validates :max_teams, :people_per_team, :numericality => {

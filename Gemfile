@@ -30,6 +30,10 @@ gem 'json-schema'               # validate incoming jsonform
 # google analytics
 gem 'rack-tracker'
 
+# ruby pubsub (observer pattern replacement)
+gem 'wisper'
+gem 'wisper-activerecord'
+
 # END dogtag gems
 # -------------------------------------------------------
 
@@ -74,6 +78,8 @@ group :test do
   gem 'simplecov'
   gem 'stripe-ruby-mock', '~> 2.2.1'
   gem 'codeclimate-test-reporter'
+  gem 'wisper-rspec'
+  gem 'test_after_commit' # needed until Rails 5 arrives (https://github.com/grosser/test_after_commit)
 end
 
 group :test, :development do

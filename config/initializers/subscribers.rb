@@ -1,0 +1,7 @@
+Race.subscribe(RaceSubscriber)
+Team.subscribe(TeamSubscriber)
+Person.subscribe(PeopleSubscriber)
+Requirement.subscribe(RequirementSubscriber)
+PaymentRequirement.subscribe(RequirementSubscriber)
+CompletedRequirement.subscribe(CompletedRequirementSubscriber)
+Tier.subscribe(TierSubscriber)

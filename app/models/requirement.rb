@@ -1,5 +1,7 @@
 # Base model to be overridden by more specific requirements.
 class Requirement < ActiveRecord::Base
+  include Wisper.model
+
   validates_presence_of :name
 
   belongs_to :race

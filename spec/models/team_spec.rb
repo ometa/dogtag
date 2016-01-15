@@ -2,6 +2,14 @@ require 'spec_helper'
 
 describe Team do
 
+  describe 'broadcasts' do
+    let(:team) { FactoryGirl.build :team }
+
+    it "calls broadcasts after_commit after saving" do
+      expect { team.save }.to broadcast(:after_commit)
+    end
+  end
+
   describe 'scopes' do
     describe 'all_finalized' do
       before do
@@ -58,7 +66,7 @@ describe Team do
 
     context 'not yet finalized and meets all requirements' do
       let(:mock_mailer) { double("mailer", deliver: true) }
-      let(:team) { FactoryGirl.create :team, :with_people, people_count: 5 }
+      let(:team) { FactoryGirl.create :team, :with_people, people_count: 3 }
 
       it 'sets finalized flat and notified_at in the db' do
         Timecop.freeze(THE_TIME) do
@@ -79,7 +87,11 @@ describe Team do
         context 'if the team already has an assigned team number' do
           it 'uses the same number' do
             team.finalize
+            Person.destroy(team.people.first)
             team.unfinalize
+
+            team.people << FactoryGirl.create(:person)
+            team.save
             team.finalize
             team.reload
             expect(team.assigned_team_number).to eq(1)
@@ -88,13 +100,18 @@ describe Team do
 
         context 'when there are teams that used to be finalized and now are not' do
           it 'skips over the formerly assigned team number to a new one' do
-            t = FactoryGirl.create :finalized_team, race: team.race
-            t.unfinalize
-            t.reload
-            expect(t.finalized).to be_false
-
             team.finalize
             team.reload
+            t = FactoryGirl.create :finalized_team, race: team.race
+            ap t
+            Person.destroy(t.people.first)
+            t.unfinalize
+            t.reload
+            ap t
+            expect(t.finalized).to be_false
+
+            ap team
+
             expect(team.assigned_team_number).to eq(2)
           end
         end
@@ -111,7 +128,7 @@ describe Team do
   describe '.unfinalize' do
 
     context 'called on a unfinalized team' do
-      let(:team) { FactoryGirl.create :team, :with_people, people_count: 5 }
+      let(:team) { FactoryGirl.create :team, :with_people, people_count: 3 }
 
       it 'returns nil' do
         expect(team.unfinalize).to be_nil
@@ -122,6 +139,7 @@ describe Team do
       let(:team) { FactoryGirl.create :finalized_team }
 
       it 'unsets finalized flat and notified_at in the db' do
+        Person.destroy(team.people.first)
         team.unfinalize
         record = Team.find(team.id)
         expect(record.notified_at).to be_nil
@@ -161,7 +179,7 @@ describe Team do
     context "when there are people on the team" do
       let(:team) { FactoryGirl.create :team, :with_people }
       it "sums their total experience" do
-        expect(team.person_experience).to eq(12)
+        expect(team.person_experience).to eq(team.people.reduce(0){|m,p| m + p.experience})
       end
     end
   end
@@ -214,7 +232,7 @@ describe Team do
       end
 
       it "returns correct percentage" do
-        expect(@team.percent_complete).to eq(16)
+        expect(@team.percent_complete).to eq(25)
       end
     end
 
@@ -223,7 +241,7 @@ describe Team do
       let(:team) { FactoryGirl.create :team, :with_people, race: req.race }
 
       it "returns correct percentage" do
-        expect(team.percent_complete).to eq(66)
+        expect(team.percent_complete).to eq(50)
       end
     end
 
@@ -233,14 +251,16 @@ describe Team do
       let(:cr) { FactoryGirl.create :completed_requirement, requirement: req, team: team }
 
       it "returns correct percentage" do
-        expect(team.percent_complete).to eq(80)
+        expect(team.percent_complete).to eq(66)
       end
     end
 
     context "when all people have been added and payment requirements are satisfied" do
-      let(:team) { FactoryGirl.create :team, :with_people, people_count: 5 }
-      let(:req) { FactoryGirl.create :payment_requirement_with_tier, race: team.race }
-      let(:cr) { FactoryGirl.create :completed_requirement, requirement: req, team: team }
+      #let(:team) { FactoryGirl.create :team, :with_people, people_count: 3 }
+      #let(:req) { FactoryGirl.create :payment_requirement_with_tier, race: team.race }
+      #let(:cr) { FactoryGirl.create :completed_requirement, requirement: req, team: team }
+
+      let(:team) { FactoryGirl.create :finalized_team }
 
       it "returns 100 percent" do
         expect(team.percent_complete).to eq(100)

@@ -1,4 +1,6 @@
 class Team < ActiveRecord::Base
+  include Wisper.model
+
   validates_presence_of :name, :description
   validates_length_of :name, :maximum => 1000, :message => "of your team is a bit long, eh? Keep it to 1000 characters or less."
   validates_uniqueness_of :name, :scope => [:race], :message => 'should be unique per race'
@@ -43,15 +45,15 @@ class Team < ActiveRecord::Base
   def finalize
     return nil if finalized
     return nil unless meets_finalization_requirements?
-    # finalize
+
     self.notified_at = Time.now
     self.assigned_team_number = self.assigned_team_number || next_available_team_num
     self.finalized = true
 
     if self.save
+      Rails.logger.info "Finalized Team: #{name} (id: #{id})"
       # todo: move mailer to async process
       UserMailer.team_finalized_email(self.user, self).deliver
-      Rails.logger.info "Finalized Team: #{name} (id: #{id})"
       true
     else
       msg = "Failed to finalize team: #{name}"
@@ -61,12 +63,15 @@ class Team < ActiveRecord::Base
   end
 
   # remove the finalization bits from the team
+  # note we intentionally do NOT remove any assigned_team_number
   def unfinalize
     return nil unless finalized
+    return nil if meets_finalization_requirements?
     # unset the notification field so they can be again notified in the future.
     self.notified_at = nil
     self.finalized = nil
     self.save
+    Rails.logger.info "Unfinalized Team: #{name} (id: #{id})"
   end
 
   def person_experience
@@ -141,7 +146,6 @@ class Team < ActiveRecord::Base
       ! used_numbers.include?(n)
     end
   end
-
 
   class << self
     # todo: spec

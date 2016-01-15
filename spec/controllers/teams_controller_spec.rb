@@ -333,7 +333,7 @@ describe TeamsController do
       end
 
       context 'team is ready for finalization' do
-        let(:team) { FactoryGirl.create :team, :with_people, people_count: 5 }
+        let(:team) { FactoryGirl.create :team, :with_people, people_count: 3 }
 
         context "admin user" do
           let(:the_user) { admin_user }

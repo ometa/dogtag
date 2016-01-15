@@ -1,6 +1,8 @@
 # Intermediate model between a Team and Requirement
 # User indicates which user made the association
 class CompletedRequirement < ActiveRecord::Base
+  include Wisper.model
+
   belongs_to :team
   belongs_to :requirement
   belongs_to :user
