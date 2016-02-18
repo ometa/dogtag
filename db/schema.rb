@@ -28,20 +28,20 @@ ActiveRecord::Schema.define(version: 20160115052426) do
   add_index "completed_requirements", ["team_id", "requirement_id"], name: "index_completed_requirements_on_team_id_and_requirement_id", unique: true, using: :btree
 
   create_table "people", force: :cascade do |t|
-    t.string   "first_name", limit: 255
-    t.string   "last_name",  limit: 255
-    t.string   "email",      limit: 255
-    t.string   "phone",      limit: 255
-    t.string   "twitter",    limit: 255
+    t.string   "first_name"
+    t.string   "last_name"
+    t.string   "email"
+    t.string   "phone"
+    t.string   "twitter"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "team_id"
     t.integer  "experience"
-    t.string   "zipcode",    limit: 255, null: false
+    t.string   "zipcode",    null: false
   end
 
   create_table "races", force: :cascade do |t|
-    t.string   "name",               limit: 255
+    t.string   "name"
     t.datetime "race_datetime"
     t.datetime "registration_open"
     t.datetime "registration_close"
@@ -50,29 +50,29 @@ ActiveRecord::Schema.define(version: 20160115052426) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "jsonform"
-    t.string   "filter_field",       limit: 255
+    t.string   "filter_field"
   end
 
   create_table "requirements", force: :cascade do |t|
     t.integer  "race_id"
-    t.string   "type",       limit: 255
-    t.string   "name",       limit: 255
+    t.string   "type"
+    t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   create_table "teams", force: :cascade do |t|
-    t.string   "name",                 limit: 255
+    t.string   "name"
     t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "description"
-    t.string   "twitter",              limit: 255
+    t.string   "twitter"
     t.datetime "notified_at"
     t.integer  "race_id"
     t.integer  "experience"
-    t.string   "buddies",              limit: 255
-    t.string   "wildcard",             limit: 255
+    t.string   "buddies"
+    t.string   "wildcard"
     t.text     "private_comments"
     t.text     "jsonform"
     t.boolean  "finalized"
@@ -90,25 +90,25 @@ ActiveRecord::Schema.define(version: 20160115052426) do
   end
 
   create_table "users", force: :cascade do |t|
-    t.string   "first_name",          limit: 255
-    t.string   "last_name",           limit: 255
-    t.string   "phone",               limit: 255
+    t.string   "first_name"
+    t.string   "last_name"
+    t.string   "phone"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "email",               limit: 255, default: "", null: false
-    t.string   "crypted_password",    limit: 255, default: "", null: false
-    t.string   "password_salt",       limit: 255, default: "", null: false
-    t.string   "persistence_token",   limit: 255, default: "", null: false
-    t.string   "single_access_token", limit: 255, default: "", null: false
-    t.string   "perishable_token",    limit: 255, default: "", null: false
-    t.integer  "login_count",                     default: 0,  null: false
-    t.integer  "failed_login_count",              default: 0,  null: false
+    t.string   "email",               default: "", null: false
+    t.string   "crypted_password",    default: "", null: false
+    t.string   "password_salt",       default: "", null: false
+    t.string   "persistence_token",   default: "", null: false
+    t.string   "single_access_token", default: "", null: false
+    t.string   "perishable_token",    default: "", null: false
+    t.integer  "login_count",         default: 0,  null: false
+    t.integer  "failed_login_count",  default: 0,  null: false
     t.datetime "last_request_at"
     t.datetime "current_login_at"
     t.datetime "last_login_at"
-    t.string   "current_login_ip",    limit: 255
-    t.string   "last_login_ip",       limit: 255
-    t.string   "stripe_customer_id",  limit: 255
+    t.string   "current_login_ip"
+    t.string   "last_login_ip"
+    t.string   "stripe_customer_id"
     t.integer  "roles_mask"
   end
 

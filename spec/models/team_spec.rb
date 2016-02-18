@@ -60,7 +60,7 @@ describe Team do
       let(:mock_mailer) { double("mailer", deliver_now: true) }
       let(:team) { FactoryGirl.create :team, :with_people, people_count: 5 }
 
-      it 'sets finalized flat and notified_at in the db' do
+      it 'sets finalized flag and notified_at in the db' do
         Timecop.freeze(THE_TIME) do
           team.finalize
           record = Team.find(team.id)
@@ -104,6 +104,18 @@ describe Team do
         expect(Rails.logger).to receive(:info).with("Finalized Team: #{team.name} (id: #{team.id})")
         expect(UserMailer).to receive(:team_finalized_email).with(team.user, team).and_return(mock_mailer)
         team.finalize
+      end
+    end
+
+    context "does not meet all requirements but somehow thinks it does" do
+      let(:mock_mailer) { double("mailer", deliver_now: true) }
+      let(:team) { FactoryGirl.create :team, :with_people, people_count: 4 }
+
+      it "raises StandardError with useful description" do
+        expect(team).to receive(:meets_finalization_requirements?).and_return(true)
+        expect do
+          team.finalize
+        end.to raise_error(StandardError, "foo")
       end
     end
   end

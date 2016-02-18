@@ -41,20 +41,24 @@ class Team < ActiveRecord::Base
 
   # sets the finalization bits and triggers follow-up actions
   def finalize
+      puts "a"
     return nil if finalized
+      puts "b"
     return nil unless meets_finalization_requirements?
+      puts "c"
     # finalize
     self.notified_at = Time.now
     self.assigned_team_number = self.assigned_team_number || next_available_team_num
     self.finalized = true
 
     if self.save
+      puts "saved"
       # todo: move mailer to async process
       UserMailer.team_finalized_email(self.user, self).deliver_now
       Rails.logger.info "Finalized Team: #{name} (id: #{id})"
       true
     else
-      msg = "Failed to finalize team: #{name}"
+      msg = "Failed to finalize team: #{name}. Errors: #{self.errors.inspect}"
       Rails.logger.error(msg)
       raise StandardError, msg
     end
