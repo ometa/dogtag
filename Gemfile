@@ -60,10 +60,14 @@ gem 'jquery-rails'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 1.2'
 
+
+
 group :development do
   gem 'capistrano'
   gem 'mailcatcher'
   gem 'web-console', '~> 3.0'
+  gem 'derailed_benchmarks', '~> 1.3.1'
+  gem 'stackprof'
 end
 
 group :test do
