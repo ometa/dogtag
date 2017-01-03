@@ -74,6 +74,8 @@ describe Race do
     end
   end
 
+  # TODO: this has to do with which jsonform question fields to show in the registrations
+  # rendering.  need confirmation & testing.
   describe '#filter_field_array' do
     context 'when filter_field is nil' do
       it 'returns empty array'
