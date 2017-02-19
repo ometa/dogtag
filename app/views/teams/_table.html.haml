@@ -33,8 +33,9 @@
             = t('of')
             = @race.requirements.count
             = t('.paid')
-          %p.small
-            = time_ago_in_words(team.updated_at)
+          %time.small.timeago{:datetime => team.updated_at.iso8601}
+            -#= time_ago_in_words(team.updated_at)
+            =team.updated_at
 
       %td
         = pluralize(team.experience, 'year')

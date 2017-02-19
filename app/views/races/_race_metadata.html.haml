@@ -1,6 +1,11 @@
+= javascript_include_tag "timeago"
+
 %p
   - if race.registerable?
-    = distance_of_time_in_words race.days_before_close
+    -#= distance_of_time_in_words race.days_before_close
+    %time.timeago
+      -#= race.days_before_close
+      = race.registration_close.iso8601
     = t('.left_to_register')
     %br
 
