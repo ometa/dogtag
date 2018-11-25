@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with dogtag.  If not, see <http://www.gnu.org/licenses/>.
-class Team < ActiveRecord::Base
+class Team < ApplicationRecord
   validates_presence_of :name, :description
   validates_length_of :name, :maximum => 1000, :message => "of your team is a bit long, eh? Keep it to 1000 characters or less."
   validates_uniqueness_of :name, :scope => [:race], :message => 'should be unique per race'

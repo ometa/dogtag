@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with dogtag.  If not, see <http://www.gnu.org/licenses/>.
-class Tier < ActiveRecord::Base
+class Tier < ApplicationRecord
   validates :price, :numericality => { :only_integer => true, :greater_than_or_equal_to => 0 }
   validates_with TierValidator
 

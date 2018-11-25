@@ -13,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with dogtag.  If not, see <http://www.gnu.org/licenses/>.
-class Race < ActiveRecord::Base
+class Race < ApplicationRecord
   validates_presence_of :name, :max_teams, :people_per_team
   validates_presence_of :race_datetime, :registration_open, :registration_close, :final_edits_close
   validates :max_teams, :people_per_team, :numericality => {

@@ -15,7 +15,7 @@
 # along with dogtag.  If not, see <http://www.gnu.org/licenses/>.
 # Intermediate model between a Team and Requirement
 # User indicates which user made the association
-class CompletedRequirement < ActiveRecord::Base
+class CompletedRequirement < ApplicationRecord
 
   include Wisper.model
 

@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with dogtag.  If not, see <http://www.gnu.org/licenses/>.
 # Base model to be overridden by more specific requirements.
-class Requirement < ActiveRecord::Base
+class Requirement < ApplicationRecord
   validates_presence_of :name
 
   belongs_to :race
