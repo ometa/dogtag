@@ -70,7 +70,7 @@ class PasswordResetsController < ApplicationController
   private
 
   def load_user_using_perishable_token
-    @user = User.find_using_perishable_token(params.require(:id))
+    @user = User.find_using_perishable_token(params.require(:id)[:id])
     unless @user
       flash[:error] = "We're sorry, but we could not locate your account"
       redirect_to home_url
