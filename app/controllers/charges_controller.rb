@@ -15,7 +15,7 @@
 # along with dogtag.  If not, see <http://www.gnu.org/licenses/>.
 class ChargesController < ApplicationController
   before_filter :require_user
-  before_filter :require_stripe_params, only: [:create]
+  #before_filter :require_stripe_params, only: [:create]
   before_filter :require_charge_object, only: [:refund]
   before_filter :require_prior_url
 
@@ -25,7 +25,7 @@ class ChargesController < ApplicationController
   def create
     authorize! :create, :charges
 
-    @customer = Customer.get(current_user, params[:stripeToken], params[:stripeEmail])
+    @customer = Customer.get(current_user, charge_params[:stripeToken], charge_params[:stripeEmail])
 
     unless @customer
       Rails.logger.error "Unable to create/retrieve customer from Stripe, User ID: #{current_user.id}"
@@ -34,12 +34,12 @@ class ChargesController < ApplicationController
       return redirect_to(url)
     end
 
-    metadata = JSON.parse params[:metadata]
+    metadata = JSON.parse(charge_params[:metadata])
 
     charge = Stripe::Charge.create(
       :customer    => @customer.id,
-      :amount      => params[:amount],
-      :description => params[:description],
+      :amount      => charge_params[:amount],
+      :description => charge_params[:description],
       :metadata    => metadata,
       :currency    => 'usd'
     )
@@ -50,7 +50,7 @@ class ChargesController < ApplicationController
     @cr_metadata = {
       'customer_id' => @customer.id,
       'charge_id' => charge.id,
-      'amount' => params[:amount]
+      'amount' => charge_params[:amount]
     }
     req = Requirement.find(metadata['requirement_id'])
     req.complete(metadata['team_id'], current_user, @cr_metadata)
@@ -81,7 +81,7 @@ class ChargesController < ApplicationController
 
   def refund
     authorize! :refund, :charges
-    Rails.logger.info "Refund requested for charge: #{params[:charge_id]}"
+    Rails.logger.info "Refund requested for charge: #{refund_params[:charge_id]}"
 
     StripeHelper.safely_call_stripe do
       @charge = @charge.refund
@@ -96,7 +96,7 @@ class ChargesController < ApplicationController
 
     msg = "The refund has processed successfully"
 
-    if params.fetch(:delete_completed_requirement, false)
+    if refund_params.fetch(:delete_completed_requirement, false)
       if current_user.is?(:admin)
         CompletedRequirement.delete_by_charge(@charge)
         msg = "#{msg}, and the completed requirement was deleted"
@@ -144,9 +144,17 @@ class ChargesController < ApplicationController
     end
   end
 
+  def charge_params
+    params.require(*STRIPE_PARAMS)
+  end
+
+  def refund_params
+    params.require(:charge_id).permit(:delete_completed_requirement)
+  end
+
   def require_charge_object
     success, ex = StripeHelper.safely_call_stripe do
-      @charge = Stripe::Charge.retrieve(params[:charge_id])
+      @charge = Stripe::Charge.retrieve(refund_params[:charge_id])
     end
 
     return render status: 404, json: {error: ex.message} unless success
