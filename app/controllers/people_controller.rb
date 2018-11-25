@@ -18,25 +18,25 @@ class PeopleController < ApplicationController
   load_and_authorize_resource
 
   def destroy
-    @person = Person.find(params.require(:id))
+    @person = Person.find(id_params[:id])
     @person.subscribe(PersonAuditor.new)
     try_to_delete(@person, team_url(id: @person.team.id))
   end
 
   def update
-    @person = Person.includes(:team).find(params.require(:id))
+    @person = Person.includes(:team).find(id_params[:id])
     @team = @person.team
     @person.subscribe(PersonAuditor.new)
     try_to_update(@person, person_params, team_url(@person.team.id))
   end
 
   def edit
-    @person = Person.includes(:team).find(params.require(:id))
+    @person = Person.includes(:team).find(id_params[:id])
     @team = @person.team
   end
 
   def new
-    @team = Team.find(params.require(:team_id))
+    @team = Team.find(team_id_params[:team_id])
     @person = Person.new
   end
 
@@ -45,7 +45,7 @@ class PeopleController < ApplicationController
     #return render :status => 400 if params[:person].blank?
 
 
-    @team = Team.find(params.require(:team_id))
+    @team = Team.find(team_id_params[:team_id])
     @person = Person.new(person_params)
     @person.subscribe(PersonAuditor.new)
     @person.team = @team
@@ -60,6 +60,15 @@ class PeopleController < ApplicationController
   end
 
   private
+
+
+  def team_id_params
+    params.require(:team_id)
+  end
+
+  def id_params
+    params.require(:id)
+  end
 
   def person_params
     params

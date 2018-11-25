@@ -25,7 +25,7 @@ class RacesController < ApplicationController
   end
 
   def show
-    @race = Race.find params[:id]
+    @race = Race.find id_params[:id]
     if current_user
       @my_race_teams = Team.belonging_to(current_user.id).where(race_id: @race.id)
       if current_user.is_any_of?(:admin, :operator)
@@ -41,16 +41,17 @@ class RacesController < ApplicationController
   end
 
   def registrations
-    @race = Race.find params[:race_id]
+    @race = Race.find(params.require(:race_id)[:race_id])
     @finalized_teams = Team.all_finalized.where(race_id: @race.id).order('updated_at DESC').includes(:people)
     @waitlisted_teams = Team.all_unfinalized.where(race_id: @race.id).order('updated_at DESC').includes(:people)
   end
 
   def export
-    return render :status => 400 if params[:race_id].blank?
+    export_params = params.require(:race_id).permit(:finalized)
+    #return render :status => 400 if params[:race_id].blank?
 
-    race_id = params[:race_id]
-    teams = params[:finalized] ? Team.export(race_id, :finalized => true) : Team.export(race_id)
+    race_id = export_params[:race_id]
+    teams = export_params[:finalized] ? Team.export(race_id, :finalized => true) : Team.export(race_id)
     data = CSV.generate do |csv|
       teams.each { |i| csv << i }
     end
@@ -58,9 +59,9 @@ class RacesController < ApplicationController
   end
 
   def create
-    return render :status => 400 if params[:race].blank?
+    #return render :status => 400 if params[:race].blank?
 
-    @race = Race.new(prepare_params(race_params))
+    @race = Race.new(parse_filter_field_param(race_params))
 
     if @race.save
       flash[:notice] = I18n.t('create_success')
@@ -72,22 +73,27 @@ class RacesController < ApplicationController
   end
 
   def update
-    @race = Race.find params[:id]
-    try_to_update(@race, prepare_params(race_params), edit_race_url(@race))
+    @race = Race.find(id_params[:id])
+    try_to_update(@race, parse_filter_field_param(race_params), edit_race_url(@race))
   end
 
   def destroy
-    @race = Race.find params[:id]
+    @race = Race.find(id_params[:id])
     try_to_delete(@race, races_path)
   end
 
   private
 
-  def prepare_params(hash)
+  def parse_filter_field_param(hash)
     if hash[:filter_field].present?
       hash[:filter_field] = hash[:filter_field].reject{|f| f.empty?}.join(',')
     end
     hash
+  end
+
+
+  def id_params
+    params.require(:id)
   end
 
   def race_params

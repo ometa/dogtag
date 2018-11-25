@@ -32,7 +32,7 @@ class QuestionsController < ApplicationController
   # this method loads the jsonform data from the team's race
   def show
     authorize! :show, :questions
-    @team = Team.find params[:team_id]
+    @team = Team.find(params.require(:team_id))
 
     unless @team.race.jsonform.present?
       flash[:info] = I18n.t('questions.none_defined')
@@ -48,7 +48,7 @@ class QuestionsController < ApplicationController
   # this saves the team's jsonform response data
   def create
     authorize! :create, :questions
-    @team = Team.find(params[:team_id])
+    @team = Team.find(params.require(:team_id))
 
     # todo: move this validation logic into model
     unless @team.race.open_for_registration?
@@ -56,7 +56,7 @@ class QuestionsController < ApplicationController
       return redirect_to team_path(@team)
     end
 
-    @team.jsonform = filter_the_params.to_json
+    @team.jsonform = filtered_params.to_json
 
     if @team.save
       flash[:info] = I18n.t('questions.updated')
@@ -71,16 +71,10 @@ class QuestionsController < ApplicationController
   private
 
   # filter the params by the whitelist and remove any with blank values
-  # TODO: change this to slice! and reject! after spec'ing
-  def filter_the_params
+  # TODO: change this to slice! and reject! after spec'ing (check if this is done)
+  def filtered_params
     params
       .slice(*HACK_PARAM_WHITELIST)
       .reject{ |_k,v| v.blank? }
-  end
-
-  def question_params
-    params
-      .require(:team_id)
-      .permit(HACK_PARAM_WHITELIST)
   end
 end
