@@ -22,19 +22,22 @@ class PasswordResetsController < ApplicationController
   end
 
   def create
-    unless params[:email].present?
-      flash.now[:error] = "No email address provided."
-      return render action: :new, status: 400
-    end
 
-    @user = User.find_by_email(params[:email])
+    strong_params = params.require(:email)
+
+    #unless params[:email].present?
+      #flash.now[:error] = "No email address provided."
+      #return render action: :new, status: 400
+    #end
+
+    @user = User.find_by_email(strong_params[:email])
 
     if @user
       @user.reset_password!(request.host_with_port)
       flash[:notice] = "Instructions to reset your password have been emailed to you"
       redirect_to home_url
     else
-      flash.now[:error] = "No user was found with email address: #{params[:email]}"
+      flash.now[:error] = "No user was found with email address: #{strong_params[:email]}"
       render action: :new, status: 400
     end
   end
@@ -43,13 +46,15 @@ class PasswordResetsController < ApplicationController
   end
 
   def update
-    unless params[:password].present? && params[:password_confirmation].present?
-      flash[:error] = 'Ensure you supply a new password and confirmation'
-      return render :action => :edit
-    end
+    strong_params = params.require([:password, :password_confirmation])
 
-    @user.password = params[:password]
-    @user.password_confirmation = params[:password_confirmation]
+    #unless params[:password].present? && params[:password_confirmation].present?
+      #flash[:error] = 'Ensure you supply a new password and confirmation'
+      #return render :action => :edit
+    #end
+
+    @user.password = strong_params[:password]
+    @user.password_confirmation = strong_params[:password_confirmation]
 
     # Use @user.save_without_session_maintenance instead if you
     # don't want the user to be signed in automatically.
@@ -65,7 +70,7 @@ class PasswordResetsController < ApplicationController
   private
 
   def load_user_using_perishable_token
-    @user = User.find_using_perishable_token(params[:id])
+    @user = User.find_using_perishable_token(params.require(:id))
     unless @user
       flash[:error] = "We're sorry, but we could not locate your account"
       redirect_to home_url
