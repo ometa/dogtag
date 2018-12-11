@@ -40,20 +40,27 @@ Docker Developer Setup
 
 ### Create and Migrate Databases
 
-Via docker:
+Inside Container:
 
     docker-compose run web bundle exec rake db:create db:migrate
     docker-compose run -e RAILS_ENV=test web bundle exec rake db:create db:migrate
 
-Or via the command line:
+Outside Container:
 
+    export DATABASE_URL=postgres://postgres:123abc@localhost:5432
     bundle exec rake db:create db:migrate
-    RAILS_ENV=test bundle exec rake db:create db:migrate'
+    RAILS_ENV=test bundle exec rake db:create db:migrate
 
 ### Run the test suite
 
-    docker-compose run web bundle exec rspec   # from within the container
-    bundle exec rspec                          # or from the console
+Inside Container: 
+
+    docker-compose run web bundle exec rspec
+
+Outside Container:
+
+    export DATABASE_URL=postgres://postgres:123abc@localhost:5432
+    bundle exec rspec
 
 ### Connect to postgres inside container
 
@@ -66,10 +73,10 @@ docker cp /local/file.dump $(docker-compose ps -q  db):/file.dump
 docker-compose exec db pg_restore -U postgres --verbose --clean --no-acl --no-owner -h localhost -d dogtag_development /file.dump
 ```
 
-Developer Setup (Deprecated)
-----------------------------
+Non-Docker Developer Setup
+--------------------------
 
-Tested on an OSX environment. If you do it in Windows or Linux and send us instructions, we will add them here.*
+*__Deprecated.__ Tested on an OSX environment. If you do it in Windows or Linux and send us instructions, we will add them here.*
 
 1. Setup your Ruby environment by installing [Homebrew](https://github.com/Homebrew/homebrew) and [rbenv](https://github.com/rbenv/rbenv).
 

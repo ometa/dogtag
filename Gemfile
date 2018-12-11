@@ -11,7 +11,7 @@ group :production do
 end
 
 gem 'authlogic',  '~> 3.4.6'   # authentication
-gem 'cancancan', '~> 1.10'     # authorization, w/ Rails 4.2 support
+gem 'cancancan', '~> 2.0'      # authorization, w/ Rails >= 4.2 support
 gem 'role_model', '~> 0.8.2'   # roles
 
 # payments
@@ -77,6 +77,7 @@ group :test do
   gem 'stripe-ruby-mock', '~> 2.3.1'
   gem 'codeclimate-test-reporter'
   gem 'zonebie'
+  gem 'rails-controller-testing'
 end
 
 group :test, :development do
@@ -99,6 +100,3 @@ end
 
 # Use unicorn as the app server (heroku)
 gem 'unicorn', '~> 5.2'
-
-# Use debugger
-# gem 'debugger', group: [:development, :test]

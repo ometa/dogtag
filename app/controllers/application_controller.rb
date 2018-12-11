@@ -25,11 +25,12 @@ class ApplicationController < ActionController::Base
   helper_method :current_user_session, :current_user
 
   # Fix for cancan and rails4
-  before_filter do
-    resource = controller_name.singularize.to_sym
-    method = "#{resource}_params"
-    params[resource] &&= send(method) if respond_to?(method, true)
-  end
+  # Seeing if this is needed any more for cancancan 2.x and rails 5.x
+  #before_filter do
+    #resource = controller_name.singularize.to_sym
+    #method = "#{resource}_params"
+    #params[resource] &&= send(method) if respond_to?(method, true)
+  #end
 
   # rescue_from ORDERING MATTERS.  Start generic first
   unless Rails.configuration.consider_all_requests_local
