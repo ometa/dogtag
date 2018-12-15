@@ -16,7 +16,7 @@
 FactoryBot.define do
 
   factory :race do
-    sequence(:name) { |n| "Race #{n}" }
+    name { "Race '#{ Faker::Name.unique.name }'" }
     registration_open { (Time.zone.now - 2.weeks) }
     registration_close { (Time.zone.now + 2.weeks) }
     final_edits_close { (Time.zone.now + 3.weeks) }

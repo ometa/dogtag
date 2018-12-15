@@ -25,7 +25,7 @@ FactoryBot.define do
   end
 
   factory :payment_requirement do
-    sequence(:name) { |n| "Payment Requirement #{n}" }
+    name { "Payment Requirement '#{ Faker::Name.unique.name }'" }
     type { 'PaymentRequirement' }
     race
 

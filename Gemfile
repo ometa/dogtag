@@ -81,6 +81,7 @@ group :test do
   gem 'codeclimate-test-reporter'
   gem 'zonebie'
   gem 'timecop'
+  gem 'faker'
 end
 
 group :test, :development do

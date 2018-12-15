@@ -16,9 +16,9 @@
 FactoryBot.define do
 
   factory :user do
-    sequence(:first_name) { |n| "First#{n}" }
-    sequence(:last_name)  { |n| "Last#{n}" }
-    sequence(:email)      { |n| "email#{n}@fake.com" }
+    first_name { Faker::Name.first_name }
+    last_name  { Faker::Name.last_name }
+    email      { Faker::Internet.unique.email }
 
     phone { '312-867-5309' }
     password { '123456' }
@@ -47,7 +47,7 @@ FactoryBot.define do
     end
 
     trait :with_stripe_account do
-      sequence(:stripe_customer_id) { |n| "stripe_customer_#{n}" }
+      stripe_customer_id { "stripe_customer_#{ Faker::Number.unique.number(5) }" }
     end
   end
 end

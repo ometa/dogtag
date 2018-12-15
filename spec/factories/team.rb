@@ -16,10 +16,10 @@
 FactoryBot.define do
 
   factory :team do
-    sequence(:name)    { |n| "Team #{n}" }
-    description        { "omg! #{name} is the best team evar." }
-    sequence(:twitter) { |n| "@twitter#{n}" }
-    experience { 5 }
+    name        { "Team '#{ Faker::Nation.unique.capital_city }'" }
+    description { Faker::Hipster.sentence(3, true, 4) }
+    twitter     { "@#{ Faker::Hipster.unique.word }" }
+    experience  { 5 }
 
     user
     race

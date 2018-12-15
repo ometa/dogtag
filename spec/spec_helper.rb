@@ -16,8 +16,11 @@
 # Generates code coverage report in /coverage/ when specs are run
 require 'simplecov'
 SimpleCov.start 'rails' do
- add_filter "/vendor/"
+ add_filter "vendor/"
 end
+
+require 'faker'
+Faker::Config.random = Random.new(1000)
 
 ENV["RAILS_ENV"] ||= 'test'
 
