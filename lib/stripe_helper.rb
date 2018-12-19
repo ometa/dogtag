@@ -38,14 +38,17 @@ class StripeHelper
       rescue Stripe::AuthenticationError, Stripe::APIConnectionError,
         Stripe::StripeError, Stripe::InvalidRequestError => ex
 
-        log_and_return_error(ex)
+        Rails.logger.error(ex)
+        [false, ex]
 
       #TODO: change to StandardError, consider deleting altogether
       rescue => ex
-        log_and_return_error(ex)
+        Rails.logger.error(ex)
+        [false, ex]
       end
     end
 
+    # TODO: consider removing
     def exception_to_hash(ex)
       hash = {
         class: ex.class.to_s,
@@ -69,11 +72,6 @@ class StripeHelper
       end
 
       hash
-    end
-
-    def log_and_return_error(ex)
-      Rails.logger.error(exception_to_hash(ex).to_json)
-      [false, ex]
     end
   end
 end
