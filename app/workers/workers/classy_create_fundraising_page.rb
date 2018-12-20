@@ -46,10 +46,21 @@ module Workers
       end
 
       cc = ClassyClient.new
-      name = "#{race.name} Fundraiser: #{team.name}"
-      result = cc.create_fundraising_page(team.classy_id, user.classy_id, name, race.classy_default_goal)
+      classy_team = cc.get_fundraising_team(team.classy_id)
+
+      result = cc.create_fundraising_page(
+        "#{race.name} Fundraiser: #{team.name}",
+        race.classy_default_goal,
+        classy_team["created_at"]
+      )
+
+      # TODO: might be able to remove this hard-coded id now
+      # see https://developers.classy.org/api-docs/v2/index.html#fundraising-pages
       team.classy_fundraiser_page_id = result['id']
       team.save!
+
+      cc.transfer_fundraising_page_to_team(result['id'], team.classy_id)
+
       UserMailer.classy_is_ready(user, team).deliver_now
 
       log[:response] = result

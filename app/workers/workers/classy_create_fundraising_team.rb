@@ -34,12 +34,12 @@ module Workers
         return
       end
 
-      unless campaign_id = race.classy_campaign_id
+      unless (campaign_id = race.classy_campaign_id)
         log("no-op", message: "No classy campaign id set for race id: #{race.id}, therefore we cannot create a fundraising team")
         return
       end
 
-      unless default_goal = race.classy_default_goal
+      unless (default_goal = race.classy_default_goal)
         log("no-op", message: "No classy default fundraising goal set for race id: #{race.id}, therefore we cannot create a fundraising team")
         return
       end

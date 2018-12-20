@@ -82,13 +82,20 @@ class ClassyClient
     nil
   end
 
-  def create_fundraising_page(team_id, member_id, title, goal)
+  def create_fundraising_page(title, goal, started_at)
     body = {
-      "member_id" => member_id,
       "title" => title,
-      "goal" => goal
+      "goal" => goal,
+      "started_at" => started_at
     }
-    post("/fundraising-teams/#{team_id}/fundraising-pages", body)
+    put("/fundraising-pages", body)
+  end
+
+  def transfer_fundraising_page_to_team(page_id, team_id)
+    body = {
+      "fundraising_team_id" => team_id
+    }
+    post("/fundraising-pages/#{page_id}/transfers", body)
   end
 
   private
@@ -161,7 +168,7 @@ class ClassyClient
     response = http.send(verb, "#{API_HOST}#{uri}", args)
 
     unless response.ok?
-      raise TransientError.new("#{response.status}: #{response.body}: #{response.headers rescue 'aint no headers'}: #{response}")
+      raise TransientError.new("#{response.status}: #{response.body}: #{response.headers}")
     end
 
     JSON.parse(response.body)
