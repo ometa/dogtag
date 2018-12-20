@@ -161,7 +161,7 @@ class ClassyClient
     response = http.send(verb, "#{API_HOST}#{uri}", args)
 
     unless response.ok?
-      raise TransientError.new("#{response.status}: #{response.body}")
+      raise TransientError.new("#{response.status}: #{response.body}: #{response.headers rescue 'aint no headers'}: #{response}")
     end
 
     JSON.parse(response.body)
