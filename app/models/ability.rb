@@ -22,6 +22,7 @@ class Ability
 
     # anonymous
     can [:create], User
+    can [:index, :show], Race
 
     return unless user.present?
 
@@ -30,17 +31,14 @@ class Ability
     # User can create and manage itself
     can [:show, :edit, :update], User, :id => user.id
 
-    # Team
     can [:index, :create], Team
     can [:index, :show, :edit], Team, user_id: user.id
     can [:update], Team do |team|
       team.user_id == user.id && team.race.open_for_registration?
     end
 
-    # Questions
     can [:show, :create], :questions
 
-    # Stripe charges
     can [:create], :charges
 
     #todo implement at some point
@@ -48,12 +46,8 @@ class Ability
       #user.id == team.user_id && team.completed_requirements.empty?
     #end
 
-    # Races
-    # /races/
-    # /races/:race_id/registrations
-    can [:index, :show, :registrations], Race
+    can [:registrations], Race
 
-    # People
     can [:create], Person
     can [:show, :edit, :update], Person do |person|
       user.team_ids.include?(person.team.id) && (person.team.race.open_for_registration? || person.team.race.in_final_edits_window?)
