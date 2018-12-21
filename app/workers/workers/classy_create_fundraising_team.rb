@@ -47,7 +47,7 @@ module Workers
       ClassyUser.link_user_to_classy!(user, race)
 
       cc = ClassyClient.new
-      result = cc.create_fundraising_team(campaign_id, "Team: #{team.name}", team.description, user.classy_id, default_goal)
+      result = cc.create_fundraising_team(campaign_id, team.name, team.description, user.classy_id, default_goal)
       team.classy_id = result['id']
       team.save!
       log[:response] = result

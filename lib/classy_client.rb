@@ -19,7 +19,7 @@ class ClassyClient
 
   API_HOST        = "https://api.classy.org"
   API_VERSION     = "2.0"
-  DEFAULT_TIMEOUT = 3 # seconds
+  DEFAULT_TIMEOUT = 5 # seconds
   AUTH_ENDPOINT   = "#{API_HOST}/oauth2/auth"
   BASE_HEADERS    = { 'User-Agent' => 'dogtag' }
   API_HEADERS     = BASE_HEADERS.merge({ 'Content-type' => 'application/json' })
@@ -34,7 +34,7 @@ class ClassyClient
 
   def get_member(id_or_email)
     get("/members/#{id_or_email}")
-  rescue TransientError
+  rescue ApiError
     nil
   end
 
@@ -60,7 +60,7 @@ class ClassyClient
 
   def get_fundraising_team(team_id)
     get("/fundraising-teams/#{team_id}")
-  rescue TransientError
+  rescue ApiError
     nil
   end
 
@@ -78,7 +78,7 @@ class ClassyClient
 
   def get_fundraising_page(page_id)
     get("/fundraising-pages/#{page_id}")
-  rescue TransientError
+  rescue ApiError
     nil
   end
 
@@ -168,9 +168,12 @@ class ClassyClient
     response = http.send(verb, "#{API_HOST}#{uri}", args)
 
     unless response.ok?
-      raise TransientError.new("#{response.status}: #{response.body}: #{response.headers}")
+      raise ApiError.new("#{response.status}: #{response.body}: #{response.headers}")
     end
 
     JSON.parse(response.body)
+  end
+
+  class ApiError < StandardError
   end
 end

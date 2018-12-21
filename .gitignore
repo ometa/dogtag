@@ -22,6 +22,7 @@ vendor/bundle
 
 # SimpleCov code coverage report
 /coverage/
+
 /.env
 /.env-local
 
