@@ -84,9 +84,11 @@ class TeamsController < ApplicationController
       if team.completed_questions?
         flash[:notice] = I18n.t('update_success')
         redirect_to(team_path(team))
+        return
       else
         flash[:notice] = I18n.t('teams.update.success_fill_out_questions')
         redirect_to(team_questions_path(team))
+        return
       end
     end
 
