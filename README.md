@@ -29,6 +29,7 @@ STRIPE_SECRET_KEY=sk_test_...
 CLASSY_CLIENT_ID=...           # optional
 CLASSY_CLIENT_SECRET=...       # optional
 ROLLBAR_ACCESS_TOKEN=...       # optional
+SKIP_VALIDATION=1              # optional; include to skip checking for required runtime variables, useful for running migrations.
 ```
 
 ## Custom questions using jsonform
@@ -86,7 +87,7 @@ Via docker:
     docker-compose run web bundle exec rake db:migrate
     docker-compose run -e RAILS_ENV=test web bundle exec rake db:migraten
 
-Or via the command line:
+Or via the command lineo
 
     bundle exec rake db:migrate
     RAILS_ENV=test bundle exec rake db:migrate

@@ -27,6 +27,8 @@ class Team < ActiveRecord::Base
   belongs_to :race
   validates_presence_of :user, :race
 
+  enum style: %i{racing art_cart}
+
   # A team has a certain number of people, per the settings for the race.
   has_many :people
 
