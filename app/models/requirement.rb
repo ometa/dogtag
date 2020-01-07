@@ -18,7 +18,8 @@ class Requirement < ActiveRecord::Base
   validates_presence_of :name
 
   belongs_to :race
-  validates_presence_of :race
+  before_validation :prepare_style_ids
+  validates_format_of :style_ids, with: /\A[a-z_]+(,[a-z_]+)*\z/, message: 'Select 1 or more team styles'
 
   has_many :completed_requirements
   has_many :teams, :through => :completed_requirements
@@ -56,5 +57,16 @@ class Requirement < ActiveRecord::Base
     cr.subscribe(CompletedRequirementAuditor.new)
     return cr if cr.save
     false
+  end
+
+  private
+
+  def prepare_style_ids
+    return if style_ids.empty?
+    _ids = JSON.parse(style_ids)
+    return if _ids.empty?
+    self.style_ids = _ids.reject{ |x| x.empty? }.join(',')
+  rescue StandardError
+    return
   end
 end

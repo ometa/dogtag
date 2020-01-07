@@ -62,6 +62,6 @@ class RequirementsController < ApplicationController
   private
 
   def requirement_params
-    params.require(:requirement).permit(:name, :type)
+    params.require(:requirement).permit(:name, :type, style_ids: [])
   end
 end

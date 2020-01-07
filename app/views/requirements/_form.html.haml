@@ -1,16 +1,24 @@
 .row.col-sm-8
   = form_for [@race, @requirement.becomes(Requirement)], :html => {:role => 'form', :class => 'form-horizontal'} do |f|
+
     .form-group
       .col-sm-4.control-label
         = label_tag :name, t('.name')
       .col-sm-8
         = f.text_field :name, :class => 'form-control'
         %small= t('.name_instructions')
+
     .form-group
       .col-sm-4.control-label
         = label_tag :type, t('.type')
       .col-sm-8
         = f.select :type, Requirement.allowed_types, :class => 'form-control'
+
+    .form-group
+      .col-sm-4.control-label
+        = label_tag :type, t('.style_ids')
+      .col-sm-8
+        = f.select :style_ids, options_for_select(Team.styles.to_a.map { |w| [w[0].humanize, w[0]] }, f.object.style_ids.split(',')),  {:class => 'form-control'}, {:multiple => true}
 
     .form-group
       .col-sm-offset-4.col-sm-8
