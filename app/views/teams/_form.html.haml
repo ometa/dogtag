@@ -5,23 +5,27 @@
       = form_for @team, :html => {:role => 'form', :class => 'form-horizontal'} do |f|
 
         .form-group
-          .col-sm-6.col-md-5.control-label= label_tag :name, t('.name')
-          .col-sm-6.col-md-7
+          .col-sm-6.col-md-7.control-label= label_tag :name, t('.name')
+          .col-sm-6.col-md-5
             = f.text_field :name, :class => 'form-control'
             %br
             %small
               = t('.name_instructions')
 
         .form-group
-          .col-sm-6.col-md-5.control-label= label_tag :description, t('.description')
-          .col-sm-6.col-md-7= f.text_area :description, :class => 'form-control'
+          .col-sm-6.col-md-7.control-label= label_tag :description, t('.description')
+          .col-sm-6.col-md-5= f.text_area :description, :class => 'form-control'
 
         .form-group
-          .col-sm-6.col-md-5.control-label= label_tag :experience, t('.experience')
-          .col-sm-6.col-md-3= f.select :experience, Team::EXPERIENCE_LEVELS.map.with_index { |n,i| [n, i] }, {:prompt => 'Please Select'}, :class => 'form-control'
+          .col-sm-6.col-md-7.control-label= label_tag :experience, t('.experience')
+          .col-sm-6.col-md-5= f.select :experience, Team::EXPERIENCE_LEVELS.map.with_index { |n,i| [n, i] }, {:prompt => 'Please Select'}, :class => 'form-control'
 
         .form-group
-          .col-sm-6.col-sm-offset-6.col-md-offset-5.col-md-8
+          .col-sm-6.col-md-7.control-label= label_tag :style, raw(t('.style'))
+          .col-sm-6.col-md-5= f.select :style, Team.styles.to_a.map { |w| [w[0].humanize, w[0]] }, :class => 'form-control'
+
+        .form-group
+          .col-sm-6.col-sm-offset-6.col-md-offset-5.col-md-7
             = f.submit t('save'), :class => ['btn', 'btn-default'], data: { disable_with: "Please wait..." }
             - if @team.id
               = link_to team_url(@team.id) do

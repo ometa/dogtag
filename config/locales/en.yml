@@ -194,6 +194,7 @@ en:
       name_instructions: "If you plan on having more than 1 team in your ensemble, you must name them the same and use numerals, e.g. Vanguard #1, Vanguard #2, etc"
       # from reg
       name: What's your team name?
+      style: "What style of team are you? Most teams select 'Racing'. Check out the <a href='https://www.chiditarod.org/rules/#carts'>cart rules</a> for more info."
       description: Sum up your team in a montage of prose
       twitter: Got twitter? Please include the @ sign
       racer_type: What type of racer are you?
