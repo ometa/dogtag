@@ -2,7 +2,7 @@ class AddStylesToRequirements < ActiveRecord::Migration
   def up
     add_column :requirements, :style_ids, :string
     backfill_style_ids
-    change_column_null :teams, :style, false
+    change_column_null :requirements, :style_ids, false
   end
 
   def down
@@ -13,8 +13,8 @@ class AddStylesToRequirements < ActiveRecord::Migration
 
   def backfill_style_ids
     execute <<-SQL
-      INSERT INTO requirements (style_ids)
-      VALUES ('racing')
+      UPDATE requirements
+      SET style_ids = 'racing'
     SQL
   end
 end

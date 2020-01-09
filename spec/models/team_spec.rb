@@ -413,30 +413,32 @@ describe Team do
   end
 
   describe '#completed_all_requirements?' do
-    before do
-      @reg = FactoryBot.create :team
-      @race = @reg.race
-      req = FactoryBot.create :enabled_payment_requirement, :race => @race
-      FactoryBot.create :completed_requirement, :requirement => req, :team => @reg
+    let(:team) { FactoryBot.create :team }
+    let(:race) { team.race }
+
+    context 'when all requirements are completed' do
+      let(:req) { FactoryBot.create :payment_requirement_with_tier, :race => race }
+      before do
+        FactoryBot.create :completed_requirement, :requirement => req, :team => team
+      end
+      it 'returns true' do
+        expect(team.completed_all_requirements?).to eq(true)
+      end
     end
 
-    it 'returns true when a race has no requirements' do
-      reg = FactoryBot.create :team
-      expect(reg.completed_all_requirements?).to eq(true)
+    context 'when race has no requirements' do
+      it 'returns true' do
+        expect(team.completed_all_requirements?).to eq(true)
+      end
     end
 
-    it 'returns true when all enabled requirements are completed' do
-      expect(@reg.completed_all_requirements?).to eq(true)
-    end
-
-    it 'return false if any enabled requirements are not completed' do
-      FactoryBot.create :enabled_payment_requirement, :race => @race
-      expect(@reg.completed_all_requirements?).to eq(false)
-    end
-
-    it "ignores a race's requirement when requirement.enabled? == false" do
-      FactoryBot.create :payment_requirement, :race => @race
-      expect(@reg.completed_all_requirements?).to eq(true)
+    context 'if a requirement is not completed' do
+      before do
+        FactoryBot.create :payment_requirement_with_tier, :race => race
+      end
+      it 'return false' do
+        expect(team.completed_all_requirements?).to eq(false)
+      end
     end
   end
 end

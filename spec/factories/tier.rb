@@ -22,6 +22,10 @@ FactoryBot.define do
     price { 5000 }
     begin_at { thetime - 2.weeks }
 
+    trait :opening_in_the_future do
+      begin_at { thetime + 2.weeks }
+    end
+
     factory :tier2 do
       price { 6000 }
       begin_at { thetime - 2.days }

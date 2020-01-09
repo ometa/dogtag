@@ -53,10 +53,6 @@ class Race < ActiveRecord::Base
     filter_field.split(',')
   end
 
-  def enabled_requirements
-    requirements.select(&:enabled?)
-  end
-
   def finalized_teams
     Team.all_finalized.where(race_id: id)
   end

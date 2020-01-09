@@ -16,6 +16,10 @@
 class PaymentRequirement < Requirement
   has_many :tiers, :foreign_key => :requirement_id, :dependent => :delete_all
 
+  def ready?
+    tiers.present?
+  end
+
   def stripe_params(team)
     metadata = JSON.generate(
       'race_name' => team.race.name,
@@ -31,10 +35,6 @@ class PaymentRequirement < Requirement
       :image => '/images/patch_ring.jpg',
       :name => team.race.name
     }
-  end
-
-  def enabled?
-    active_tier.present?
   end
 
   def active_tier

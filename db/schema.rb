@@ -63,7 +63,7 @@ ActiveRecord::Schema.define(version: 20200107092540) do
     t.string   "name",       limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "style_ids"
+    t.string   "style_ids",              null: false
   end
 
   create_table "teams", force: :cascade do |t|

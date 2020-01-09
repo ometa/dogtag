@@ -64,6 +64,7 @@ class Team < ActiveRecord::Base
   end
 
   # sets the finalization bits and triggers follow-up actions
+  # return true if finalization was successful; raise otherwise
   # return nil if the team is not a candidate for finalization
   def finalize
     return nil if finalized
@@ -102,7 +103,8 @@ class Team < ActiveRecord::Base
   end
 
   def percent_complete
-    total = race.requirements.select(&:enabled?).size + race.people_per_team
+    # TODO: logic to select only the applicable requirements
+    total = race.requirements.size + race.people_per_team
     total += 1 if race.jsonform.present?
 
     var = people.size + requirements.size
@@ -138,7 +140,8 @@ class Team < ActiveRecord::Base
 
   def completed_all_requirements?
     return true if race.requirements.blank?
-    race.requirements.select(&:enabled?) == requirements
+    # TODO: logic to choose requirements based on team style
+    race.requirements == requirements
   end
 
   def meets_finalization_requirements?

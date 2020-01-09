@@ -1,4 +1,4 @@
-# Copyright (C) 2014 Devin Breen
+# Copyright (C) 2020 Devin Breen
 # This file is part of dogtag <https://github.com/chiditarod/dogtag>.
 #
 # dogtag is free software: you can redistribute it and/or modify
@@ -13,27 +13,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with dogtag.  If not, see <http://www.gnu.org/licenses/>.
-FactoryBot.define do
-  factory :requirement do
-    name { 'Requirement' }
-    race
+class ApprovalRequirement < Requirement
 
-    #todo -get rid of this
-    factory :requirement2 do
-      name { 'Requirement 2' }
-    end
-  end
-
-  factory :payment_requirement do
-    sequence(:name) { |n| "Payment Requirement #{n}" }
-    type { 'PaymentRequirement' }
-    race
-
-    factory :payment_requirement_with_tier do
-      name { 'Payment Requirement w/ tier' }
-      after(:create) do |pay_req, evaluator|
-        create_list(:tier, 1, requirement_id: pay_req.id)
-      end
-    end
+  def ready?
+    true
   end
 end

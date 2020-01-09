@@ -1,0 +1,28 @@
+- if req.completed?(team)
+  = t('completed')
+
+  -# TODO: add change refunder to approver role
+  - if current_user.is_any_of? [:refunder, :admin]
+    Unapprove
+    -#= button_to t('unapprove'), charge_refund_url(charge.id), :method=>:post, :data => { :confirm => 'Are you sure?'}, :class=> %w(btn btn-danger)
+
+- else
+
+  -# TODO: add change refunder to approver role
+  - if current_user.is_any_of? [:refunder, :admin]
+    Approve
+    -#= button_to t('unapprove'), charge_refund_url(charge.id), :method=>:post, :data => { :confirm => 'Are you sure?'}, :class=> %w(btn btn-danger)
+
+  - else
+
+    - if @race.full?
+      %h4.text-warning
+        = t('.no_pay_waitlist')
+    - else
+      - if req.race.open_for_registration?
+        Approval is done by race admins after we approve your submission.
+      - else
+        %i.lead.text-danger
+          %i.fa.fa-lock.fa-5x
+            %br
+        = t('.no_complete_when_closed')

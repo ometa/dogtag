@@ -3,7 +3,8 @@
     %tr
       %th{:colspan => 2}= t('edit')
       %th= t('name')
-      %th= t('enabled')
+      %th= t('applies_to')
+      %th= t('ready')
       %th= t('details')
       %th
   - requirements.each do |req|
@@ -13,8 +14,9 @@
           %i.fa.fa-edit.fa-2x
       %td= button_to t('delete'), race_requirement_url(:race_id => race_id, :id => req.id), :method => :delete,  :data => { :confirm => 'Are you sure?' }
       %td= req.name
+      %td= req.style_ids&.split(',')&.map {|s| s.humanize }.join(', ')
       %td
-        - if req.enabled?
+        - if req.ready?
           %i.fa.fa-check.fa-2x
         - else
           = link_to t('action_required'), (edit_race_requirement_url(:race_id => race_id, :id => req.id))

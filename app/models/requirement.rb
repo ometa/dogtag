@@ -24,7 +24,10 @@ class Requirement < ActiveRecord::Base
   has_many :completed_requirements
   has_many :teams, :through => :completed_requirements
 
-  ALLOWED_TYPES = [['Payment', 'PaymentRequirement']]
+  ALLOWED_TYPES = [
+    ['Payment', 'PaymentRequirement'],
+    ['Approval', 'ApprovalRequirement']
+  ]
 
   class << self
     def allowed_types
@@ -32,7 +35,7 @@ class Requirement < ActiveRecord::Base
     end
   end
 
-  def enabled?
+  def ready?
     raise "Implement Me!"
   end
 

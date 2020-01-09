@@ -68,7 +68,7 @@
         .text-success.fa.fa-smile-o
       - else
         .text-danger.fa.fa-frown-o
-      = t('.payments')
+      = t('.requirements')
 
   %li
     - if @team.race.open_for_registration? || current_user.is_any_of?(:admin, :operator)
@@ -156,7 +156,7 @@
 
   .tab-pane{:id => "requirements"}
 
-    - if @team.race.enabled_requirements.present?
+    - if @team.race.requirements.present?
       .page-header
         - if ! @team.completed_all_requirements?
           .pull-right
@@ -171,7 +171,7 @@
           %small
             = @team.requirements.count
             = t('of')
-            = @team.race.enabled_requirements.count
+            = @team.race.requirements.count
             - if @team.completed_all_requirements?
               %i.fa.fa-smile-o.text-success
         %p= t('.requirement_instructions')
@@ -179,7 +179,7 @@
 
       .row
         .col-xs-8.col-md-7
-          - @team.race.enabled_requirements.each do |req|
+          - @team.race.requirements.each do |req|
             .col-md-5.col-xs-6.pull-left
               .panel.panel-default
                 .panel-heading
@@ -195,6 +195,8 @@
                   -# todo - render more generically
                   - if req.type == 'PaymentRequirement'
                     = render 'requirements/payment_requirement', :team => @team, :req => req
+                  - elsif req.type == 'ApprovalRequirement'
+                    = render 'requirements/approval_requirement', :team => @team, :req => req
 
     - else
       %p

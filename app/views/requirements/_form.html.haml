@@ -18,7 +18,7 @@
       .col-sm-4.control-label
         = label_tag :type, t('.style_ids')
       .col-sm-8
-        = f.select :style_ids, options_for_select(Team.styles.to_a.map { |w| [w[0].humanize, w[0]] }, f.object.style_ids.split(',')),  {:class => 'form-control'}, {:multiple => true}
+        = f.select :style_ids, options_for_select(Team.styles.to_a.map { |w| [w[0].humanize, w[0]] }, f.object&.style_ids&.split(',')),  {:class => 'form-control'}, {:multiple => true}
 
     .form-group
       .col-sm-offset-4.col-sm-8

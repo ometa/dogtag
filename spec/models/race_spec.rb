@@ -155,22 +155,6 @@ describe Race do
     end
   end
 
-  describe '#enabled_requirements' do
-    before do
-      @race = FactoryBot.create :race
-      @req = FactoryBot.create :enabled_payment_requirement, :race => @race
-    end
-
-    it 'returns requirements where enabled? == true' do
-      expect(@race.enabled_requirements).to eq [@req]
-    end
-
-    it 'does not return disabled requirements' do
-      FactoryBot.create :payment_requirement, :race => @race
-      expect(@race.enabled_requirements).to eq [@req]
-    end
-  end
-
   describe '#finalized_teams' do
     let(:team)        { FactoryBot.create :finalized_team }
     let(:race)        { team.race }

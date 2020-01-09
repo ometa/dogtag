@@ -221,7 +221,7 @@ en:
       race_over_slacked: The race is over and you slacked
     show:
       edit: edit
-      requirements: Payments
+      requirements: Requirements
       status: Team Status
       race: "Race:"
       registered_for: Registered for
@@ -232,7 +232,7 @@ en:
       description: "Your Mission:"
       people: Racers
       no_people_added: omg, you need to add racers!
-      requirement_instructions: "You must complete the following payments to complete registration. The price is based on When You Pay, not when you register."
+      requirement_instructions: "You must complete the following requirements to complete your registration. For payments, the price is based on When You Pay, not when you register."
       be_patient: Payments are processed securely with Stripe. Please click the Pay button only once and be patient!
 
       people_instructions: |

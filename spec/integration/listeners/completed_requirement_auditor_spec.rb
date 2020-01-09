@@ -3,7 +3,7 @@ require 'spec_helper'
 describe "CompletedRequirementAuditor" do
 
   let(:user) { FactoryBot.create :user }
-  let(:req)  { FactoryBot.create :enabled_payment_requirement }
+  let(:req)  { FactoryBot.create :payment_requirement_with_tier }
   let(:cr)   { FactoryBot.build :cr, requirement: req, team: team, user: user }
 
   before do
