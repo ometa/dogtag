@@ -13,8 +13,9 @@ group :production do
   gem 'rollbar'
 end
 
-gem 'authlogic', '~> 4.4.2'  # authentication
-gem 'cancancan', '~> 2.3.0'  # authorization, w/ Rails 4.2 support
+gem 'authlogic', '~> 6.0'  # authentication - Rails 6.0+ support
+gem 'scrypt' # Required by authlogic 6.x for SCrypt crypto provider
+gem 'cancancan', '~> 3.0'  # authorization, Rails 6.0+ support
 gem 'role_model', '~> 0.8.2' # roles
 
 # payments
@@ -24,7 +25,7 @@ gem 'stripe', '~> 1.58.0'
 gem 'activerecord-import'
 
 gem 'pg'
-gem 'json-schema'
+gem 'json-schema', '< 6.0' # v6+ requires Ruby 3.2+
 
 # google analytics
 gem 'rack-tracker'
@@ -37,8 +38,9 @@ gem 'oj'
 
 # requird until upgrade
 gem "ffi", "< 1.17.0"
+gem "logger", "~> 1.6.0"  # Lock to compatible version for Ruby 2.7
 
-gem 'rails', '~> 5.2.8'
+gem 'rails', '~> 6.0.0'
 # locking psych < 4 mitigates https://stackoverflow.com/questions/71191685/visit-psych-nodes-alias-unknown-alias-default-psychbadalias
 gem 'psych', '< 4'
 # newer versions of rdoc depend on psych 4+

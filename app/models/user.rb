@@ -28,13 +28,16 @@ class User < ApplicationRecord
   # authlogic
   acts_as_authentic do |c|
     c.login_field = :email
-    c.validate_login_field = false
+    # validate_login_field removed in authlogic 6.x
     c.perishable_token_valid_for = 3.hours
 
     # In version 3.4.0, the default crypto_provider was changed from Sha512 to SCrypt.
     c.transition_from_crypto_providers = [Authlogic::CryptoProviders::Sha512]
     c.crypto_provider = Authlogic::CryptoProviders::SCrypt
   end
+
+  # Re-enable password_confirmation in authlogic 6.x
+  validates_confirmation_of :password, if: :require_password?
 
   # ---------------------------------------------------------------
   # role_model role support for cancan
