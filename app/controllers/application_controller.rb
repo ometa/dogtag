@@ -78,7 +78,7 @@ class ApplicationController < ActionController::Base
   ## common functions used in controllers ------
 
   def try_to_update(obj_to_update, attributes_to_apply, redirect_to_url, success_msg='update_success')
-    if obj_to_update.update_attributes(attributes_to_apply)
+    if obj_to_update.update(attributes_to_apply)
       flash[:notice] = I18n.t(success_msg)
       redirect_to(redirect_to_url)
     else
