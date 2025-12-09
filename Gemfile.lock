@@ -254,7 +254,6 @@ GEM
     pg (1.6.2)
     power_assert (3.0.1)
     prism (1.6.0)
-    psych (3.3.4)
     public_suffix (5.1.1)
     raabro (1.4.0)
     racc (1.8.1)
@@ -496,17 +495,14 @@ DEPENDENCIES
   kaminari
   libv8-node
   listen
-  logger (~> 1.6.0)
   newrelic_rpm
   nokogiri
   oj
   pg
-  psych (< 4)
   rack-tracker
   rails (~> 7.0.0)
   rails-controller-testing
   rails_12factor
-  rdoc (~> 6.3.3)
   responders
   role_model (~> 0.8.2)
   rollbar
@@ -536,7 +532,7 @@ DEPENDENCIES
   zonebie
 
 RUBY VERSION
-   ruby 2.7.8p225
+   ruby 3.1.7p261
 
 BUNDLED WITH
    2.1.4
