@@ -40,7 +40,7 @@ gem 'oj'
 gem "ffi", "< 1.17.0"
 gem "logger", "~> 1.6.0"  # Lock to compatible version for Ruby 2.7
 
-gem 'rails', '~> 6.1.0'
+gem 'rails', '~> 7.0.0'
 # locking psych < 4 mitigates https://stackoverflow.com/questions/71191685/visit-psych-nodes-alias-unknown-alias-default-psychbadalias
 gem 'psych', '< 4'
 # newer versions of rdoc depend on psych 4+
