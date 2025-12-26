@@ -192,6 +192,82 @@ namespace :test_seeds do
     puts "  Credentials file: #{credentials_file}"
   end
 
+  desc "Create team with 5 people and 1 real Stripe payment requirement"
+  task stripe_payment: :environment do
+    require 'factory_bot_rails'
+    require 'json'
+    require 'securerandom'
+
+    puts "🌱 Seeding Stripe payment test using factories..."
+
+    # Generate unique ID for credentials file (must be passed from Playwright for concurrency)
+    unique_id = ENV['TEST_UNIQUE_ID'] || SecureRandom.uuid
+    credentials_file = Rails.root.join('tmp', "test_credentials_#{unique_id}.json")
+
+    # Create captain with known password
+    captain = FactoryBot.create(:user,
+      first_name: "Captain",
+      last_name: "Stripe",
+      email: "captain-#{unique_id}@example.com",
+      password: "password123",
+      password_confirmation: "password123"
+    )
+
+    # Create race
+    race = FactoryBot.create(:race,
+      name: "Race #{unique_id[0..7]}",
+      people_per_team: 5,
+      max_teams: 100
+    )
+
+    # Create real PaymentRequirement (connects to Stripe)
+    payment_req = PaymentRequirement.create!(
+      name: "Registration Fee",
+      race: race
+    )
+    Tier.create!(
+      requirement: payment_req,
+      price: 5000, # $50.00
+      begin_at: 10.days.ago
+    )
+
+    # Create team with 5 people using factory
+    team = FactoryBot.create(:team,
+      name: "Test Team Stripe",
+      description: "Test team for Stripe payments",
+      experience: 1,
+      race: race,
+      user: captain
+    )
+
+    5.times do |i|
+      FactoryBot.create(:person,
+        team: team,
+        email: "person#{i + 1}-#{unique_id}@example.com"
+      )
+    end
+
+    # Write credentials to unique temp file for Playwright tests
+    credentials = {
+      captain_email: captain.email,
+      captain_password: "password123",
+      race_id: race.id,
+      race_name: race.name,
+      team_id: team.id,
+      team_name: team.name,
+      payment_amount: 5000
+    }
+    File.write(credentials_file, credentials.to_json)
+
+    puts "✅ Seeded!"
+    puts "  Captain: #{captain.email} / password123"
+    puts "  Race: #{race.name} (ID: #{race.id})"
+    puts "  Team: #{team.name} (ID: #{team.id})"
+    puts "  Team members: 5/5 (full team)"
+    puts "  Payment: #{payment_req.name} - $50.00 (real Stripe)"
+    puts "  Credentials file: #{credentials_file}"
+  end
+
   desc "Clean up all test data"
   task cleanup: :environment do
     puts "🧹 Cleaning up test data..."
