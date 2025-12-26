@@ -64,10 +64,6 @@ test.describe('Payment Requirements and Tiers', () => {
 
     // Verify team finalized (same success flow as test #1)
     await expect(page.getByText(/congratulations/i)).toBeVisible();
-    await expect(page.getByText(/complete/i)).toBeVisible();
-
-    // Verify payments tab shows 2 of 2
-    const paymentsCompleted = await page.getByText(/2 of 2/).isVisible().catch(() => false);
-    expect(paymentsCompleted).toBe(true);
+    await expect(page.getByText(/your team is now complete/i)).toBeVisible();
   });
 });

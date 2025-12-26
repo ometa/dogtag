@@ -1,10 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { execSync } from 'child_process';
 
 /**
  * Integration Test: Captain Adds Fifth Person and Triggers Team Finalization
- *
- * Prerequisites (run before test):
- *   rails test_seeds:basic
  *
  * This test verifies the happy path where:
  * 1. A team has 4/5 members
@@ -15,6 +13,9 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('User Registration and Team Finalization', () => {
+  test.beforeAll(async () => {
+    execSync('bundle exec rails test_seeds:cleanup && bundle exec rails test_seeds:basic', { stdio: 'inherit' });
+  });
 
   test('captain adds fifth person and triggers finalization', async ({ page }) => {
     // Test credentials (from test_seeds:basic task)
