@@ -37,12 +37,12 @@ FactoryBot.define do
     end
 
     trait :with_classy_id do
-      classy_id { 123456 }
+      classy_id { "123456" }
     end
 
     # classy_id is a prerequisite
     trait :with_classy_fundraising_page do
-      classy_id { 123456 }
+      classy_id { "123456" }
       classy_fundraiser_page_id { 42 }
     end
 
