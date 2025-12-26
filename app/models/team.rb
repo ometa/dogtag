@@ -60,6 +60,7 @@ class Team < ApplicationRecord
     "18th year I'M AN ADULT",
     "19th year wait are you seriously still doing this?",
     "XX"
+    "21st year finally legal"
   ]
 
   def unfinalized
