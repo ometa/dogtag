@@ -37,3 +37,15 @@ dump.rdb
 TAGS
 .byebug_history
 .idea/
+
+# Node.js and npm
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-error.log*
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+.playwright/

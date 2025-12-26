@@ -16,7 +16,7 @@
 class User < ApplicationRecord
   validates :first_name, :last_name, :phone, :email, presence: true
   validates :email, format: { :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i }
-  validates :email, uniqueness: true
+  validates :email, uniqueness: { case_sensitive: false }
 
   has_many :completed_requirements
   has_many :teams
@@ -36,8 +36,11 @@ class User < ApplicationRecord
     c.crypto_provider = Authlogic::CryptoProviders::SCrypt
   end
 
-  # Re-enable password_confirmation in authlogic 6.x
-  validates_confirmation_of :password, if: :require_password?
+  # Password validations for authlogic 6.x
+  # In Authlogic 6.x, we must add explicit password validations
+  attr_accessor :password_confirmation
+  validates :password, presence: true, length: { minimum: 8 }, confirmation: true, if: :require_password?
+  validates :password_confirmation, presence: true, if: :require_password?
 
   # ---------------------------------------------------------------
   # role_model role support for cancan

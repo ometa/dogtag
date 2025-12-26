@@ -88,6 +88,7 @@ group :development do
   gem 'web-console'
   gem 'listen'
   gem 'capistrano'
+  gem 'webrick' # Development server for Rails 7+
 end
 
 group :test do

@@ -128,7 +128,7 @@
     %h2
       - if @team.needs_people?
         - if @team.race.open_for_registration? || current_user.is_any_of?(:admin, :operator)
-          = link_to new_team_person_url(@team.id) do
+          = link_to new_team_person_url(@team.id), id: 'add-person-to-team' do
             %i.fa.fa-plus.fa-2x
       - else
         %i.fa.fa-smile-o.text-success

@@ -133,7 +133,7 @@ describe Workers::ClassyCreateFundraisingTeam do
         expect(worker).to receive(:log).with("complete", any_args)
         expect(Workers::ClassyFundraisingTeamEmail).to receive(:perform_async)
         worker.perform({'team_id' => team.id})
-        expect(team.reload.classy_id).to eq(json['id'])
+        expect(team.reload.classy_id).to eq(json['id'].to_s)
       end
     end
   end

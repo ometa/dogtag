@@ -12,6 +12,7 @@
 
 ActiveRecord::Schema[7.0].define(version: 2025_12_09_125509) do
   # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
 
   create_table "classy_cache_org_members", force: :cascade do |t|
@@ -22,17 +23,14 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_09_125509) do
     t.index ["email", "classy_member_id", "classy_updated_at"], name: "index_classy_org_members", unique: true
   end
 
-  create_table "completed_requirements", force: :cascade do |t|
-    t.bigint "team_id"
-    t.bigint "requirement_id"
-    t.bigint "user_id"
+  create_table "completed_requirements", id: :serial, force: :cascade do |t|
+    t.integer "team_id"
+    t.integer "requirement_id"
+    t.integer "user_id"
     t.text "metadata"
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
-    t.index ["requirement_id"], name: "index_completed_requirements_on_requirement_id"
     t.index ["team_id", "requirement_id"], name: "index_completed_requirements_on_team_id_and_requirement_id", unique: true
-    t.index ["team_id"], name: "index_completed_requirements_on_team_id"
-    t.index ["user_id"], name: "index_completed_requirements_on_user_id"
   end
 
   create_table "customers", force: :cascade do |t|
@@ -44,22 +42,21 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_09_125509) do
     t.index ["user_id"], name: "index_customers_on_user_id", unique: true
   end
 
-  create_table "people", force: :cascade do |t|
-    t.string "first_name"
-    t.string "last_name"
-    t.string "email"
-    t.string "phone"
-    t.string "twitter"
+  create_table "people", id: :serial, force: :cascade do |t|
+    t.string "first_name", limit: 255
+    t.string "last_name", limit: 255
+    t.string "email", limit: 255
+    t.string "phone", limit: 255
+    t.string "twitter", limit: 255
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
-    t.bigint "team_id"
+    t.integer "team_id"
     t.integer "experience"
-    t.string "zipcode", null: false
-    t.index ["team_id"], name: "index_people_on_team_id"
+    t.string "zipcode", limit: 255, null: false
   end
 
-  create_table "races", force: :cascade do |t|
-    t.string "name"
+  create_table "races", id: :serial, force: :cascade do |t|
+    t.string "name", limit: 255
     t.datetime "race_datetime", precision: nil
     t.datetime "registration_open", precision: nil
     t.datetime "registration_close", precision: nil
@@ -68,33 +65,32 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_09_125509) do
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
     t.text "jsonform"
-    t.string "filter_field"
+    t.string "filter_field", limit: 255
     t.integer "classy_campaign_id"
     t.integer "classy_default_goal"
     t.datetime "final_edits_close", precision: nil, null: false
   end
 
-  create_table "requirements", force: :cascade do |t|
-    t.bigint "race_id"
-    t.string "type"
-    t.string "name"
+  create_table "requirements", id: :serial, force: :cascade do |t|
+    t.integer "race_id"
+    t.string "type", limit: 255
+    t.string "name", limit: 255
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
-    t.index ["race_id"], name: "index_requirements_on_race_id"
   end
 
-  create_table "teams", force: :cascade do |t|
-    t.string "name"
-    t.bigint "user_id"
+  create_table "teams", id: :serial, force: :cascade do |t|
+    t.string "name", limit: 255
+    t.integer "user_id"
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
     t.text "description"
-    t.string "twitter"
+    t.string "twitter", limit: 255
     t.datetime "notified_at", precision: nil
     t.integer "race_id"
     t.integer "experience"
-    t.string "buddies"
-    t.string "wildcard"
+    t.string "buddies", limit: 255
+    t.string "wildcard", limit: 255
     t.text "private_comments"
     t.text "jsonform"
     t.boolean "finalized"
@@ -102,38 +98,36 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_09_125509) do
     t.string "classy_id"
     t.integer "classy_fundraiser_page_id"
     t.index ["race_id"], name: "index_teams_on_race_id"
-    t.index ["user_id"], name: "index_teams_on_user_id"
   end
 
-  create_table "tiers", force: :cascade do |t|
-    t.bigint "requirement_id"
+  create_table "tiers", id: :serial, force: :cascade do |t|
+    t.integer "requirement_id"
     t.datetime "begin_at", precision: nil
     t.integer "price"
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
-    t.index ["requirement_id"], name: "index_tiers_on_requirement_id"
   end
 
-  create_table "users", force: :cascade do |t|
-    t.string "first_name"
-    t.string "last_name"
-    t.string "phone"
+  create_table "users", id: :serial, force: :cascade do |t|
+    t.string "first_name", limit: 255
+    t.string "last_name", limit: 255
+    t.string "phone", limit: 255
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
-    t.string "email", default: "", null: false
-    t.string "crypted_password", default: "", null: false
-    t.string "password_salt", default: "", null: false
-    t.string "persistence_token", default: "", null: false
-    t.string "single_access_token", default: "", null: false
-    t.string "perishable_token", default: "", null: false
+    t.string "email", limit: 255, default: "", null: false
+    t.string "crypted_password", limit: 255, default: "", null: false
+    t.string "password_salt", limit: 255, default: "", null: false
+    t.string "persistence_token", limit: 255, default: "", null: false
+    t.string "single_access_token", limit: 255, default: "", null: false
+    t.string "perishable_token", limit: 255, default: "", null: false
     t.integer "login_count", default: 0, null: false
     t.integer "failed_login_count", default: 0, null: false
     t.datetime "last_request_at", precision: nil
     t.datetime "current_login_at", precision: nil
     t.datetime "last_login_at", precision: nil
-    t.string "current_login_ip"
-    t.string "last_login_ip"
-    t.string "stripe_customer_id"
+    t.string "current_login_ip", limit: 255
+    t.string "last_login_ip", limit: 255
+    t.string "stripe_customer_id", limit: 255
     t.integer "roles_mask"
     t.integer "classy_id"
   end

@@ -48,7 +48,7 @@ services:
       - ./docker/init-postgres.sh:/docker-entrypoint-initdb.d/init-postgres.sh
 
   redis:
-    image: redis:5-alpine
+    image: redis:7-alpine
     command: redis-server --appendonly yes
     networks:
       - web
