@@ -1,62 +1,70 @@
 # Rake task to seed test data for integration tests
 # Usage:
-#   rails test_seeds:basic                    (for local development)
-#   heroku run rails test_seeds:basic -r staging  (for staging environment)
+#   rails test_seeds:admin                     (create admin user only)
+#   rails test_seeds:basic                     (create full test environment using factories)
+#   rails test_seeds:payment_tiers             (create payment tiers test data)
+#   rails test_seeds:cleanup                   (clean up all test data)
 
 namespace :test_seeds do
-  desc "Create basic test environment: admin user, open race, team with 4 people"
+  desc "Create admin user only (static email)"
+  task admin: :environment do
+    puts "🌱 Creating admin user..."
+
+    # Only create if doesn't exist
+    admin = User.find_by(email: "test+admin@example.com")
+    if admin
+      puts "  Admin user already exists: #{admin.email}"
+    else
+      admin = User.create!(
+        first_name: "Admin",
+        last_name: "User",
+        email: "test+admin@example.com",
+        phone: "555-111-2222",
+        password: "password123",
+        password_confirmation: "password123",
+        roles_mask: User.mask_for(:admin)
+      )
+      puts "  ✓ Admin user created: #{admin.email}"
+    end
+  end
+
+  desc "Create basic test environment using factories: captain, race, team with 4 people"
   task basic: :environment do
-    puts "🌱 Seeding basic test environment..."
+    require 'factory_bot_rails'
+    require 'json'
+    require 'securerandom'
 
-    # Clean up existing test data
-    puts "  Cleaning up existing test data..."
-    User.where("email LIKE ?", "%test+%").destroy_all
-    Team.where("name LIKE ?", "Test Team%").destroy_all
-    Race.where("name LIKE ?", "Test Race%").destroy_all
+    puts "🌱 Seeding basic test environment using factories..."
 
-    # Create admin user
-    puts "  Creating admin user..."
-    admin = User.create!(
-      first_name: "Admin",
-      last_name: "User",
-      email: "test+admin@example.com",
-      phone: "555-111-2222",
-      password: "password123",
-      password_confirmation: "password123",
-      roles_mask: User.mask_for(:admin)
-    )
-    puts "    ✓ Admin user created: #{admin.email}"
+    # Generate unique ID for credentials file (must be passed from Playwright for concurrency)
+    unique_id = ENV['TEST_UNIQUE_ID'] || SecureRandom.uuid
+    credentials_file = Rails.root.join('tmp', "test_credentials_#{unique_id}.json")
 
-    # Create race open for registration
-    puts "  Creating open race..."
-    race = Race.create!(
-      name: "Test Race #{Time.now.to_i}",
-      race_datetime: 30.days.from_now,
-      registration_open: 1.day.ago,
-      registration_close: 7.days.from_now,
-      final_edits_close: 8.days.from_now,
-      max_teams: 100,
-      people_per_team: 5
-    )
-    puts "    ✓ Race created: #{race.name}"
-    puts "      - Open for registration: #{race.registration_open} to #{race.registration_close}"
-    puts "      - People per team: #{race.people_per_team}"
-
-    # Create team captain user
+    # Create captain user with known password
     puts "  Creating team captain user..."
-    captain = User.create!(
+    captain = FactoryBot.create(:user,
       first_name: "Captain",
       last_name: "TestUser",
-      email: "test+captain@example.com",
-      phone: "555-222-3333",
+      email: "captain-#{unique_id}@example.com",
       password: "password123",
       password_confirmation: "password123"
     )
     puts "    ✓ Captain created: #{captain.email}"
 
+    # Create race open for registration with 5 people per team
+    puts "  Creating open race..."
+    race = FactoryBot.create(:race,
+      name: "Race #{unique_id[0..7]}",
+      people_per_team: 5,
+      max_teams: 100
+    )
+    puts "    ✓ Race created: #{race.name}"
+    puts "      - Open for registration: #{race.registration_open} to #{race.registration_close}"
+    puts "      - People per team: #{race.people_per_team}"
+
     # Create team with 4 people (needs 5 to finalize)
     puts "  Creating team with 4 people..."
-    team = Team.create!(
+    team = FactoryBot.create(:team,
       name: "Test Team Awesome",
       description: "A test team ready for one more member!",
       experience: 1,
@@ -66,76 +74,66 @@ namespace :test_seeds do
 
     # Add 4 people to the team
     4.times do |i|
-      person = Person.create!(
+      person = FactoryBot.create(:person,
         team: team,
-        first_name: "Person#{i + 1}",
-        last_name: "TestMember",
-        email: "test+person#{i + 1}@example.com",
-        phone: "555-#{300 + i}-#{4000 + i}",
-        zipcode: "60601",
-        experience: i
+        email: "person#{i + 1}-#{unique_id}@example.com"
       )
-      puts "    ✓ Added person #{i + 1}: #{person.first_name} #{person.last_name}"
+      puts "    ✓ Added person #{i + 1}: #{person.first_name} #{person.last_name} (#{person.email})"
     end
 
     puts "    Team status: #{team.people.count}/#{race.people_per_team} people"
     puts "    Finalized: #{team.finalized.inspect} (needs #{race.people_per_team - team.people.count} more)"
 
-    # Create 5th user who will join the team
-    puts "  Creating 5th user (the one who will join)..."
-    fifth_user = User.create!(
-      first_name: "Fifth",
-      last_name: "Joiner",
-      email: "test+fifth@example.com",
-      phone: "555-999-8888",
-      password: "password123",
-      password_confirmation: "password123"
-    )
-    puts "    ✓ Fifth user created: #{fifth_user.email}"
+    # Write credentials to unique temp file for Playwright tests
+    credentials = {
+      captain_email: captain.email,
+      captain_password: "password123",
+      race_id: race.id,
+      race_name: race.name,
+      team_id: team.id,
+      team_name: team.name
+    }
+    File.write(credentials_file, credentials.to_json)
 
     puts ""
     puts "✅ Test environment seeded successfully!"
     puts ""
     puts "📋 Summary:"
-    puts "  Admin user: #{admin.email} / password123"
     puts "  Captain user: #{captain.email} / password123"
-    puts "  Fifth user: #{fifth_user.email} / password123"
     puts "  Race: #{race.name} (ID: #{race.id})"
     puts "  Team: #{team.name} (ID: #{team.id})"
     puts "  Team status: #{team.people.count}/#{race.people_per_team} people (needs 1 more to finalize)"
+    puts "  Credentials file: #{credentials_file}"
     puts ""
     puts "🧪 Ready for integration tests!"
-    puts "   The fifth user can now join the team to trigger finalization."
   end
 
-  desc "Create race with 2 payment requirements (1 tier and 3 tiers)"
+  desc "Create race with 2 payment requirements (1 tier and 3 tiers) using factories"
   task payment_tiers: :environment do
-    puts "🌱 Seeding payment tiers test..."
+    require 'factory_bot_rails'
+    require 'json'
+    require 'securerandom'
 
-    # Clean up
-    User.where("email LIKE ?", "%test+%").destroy_all
-    Team.where("name LIKE ?", "Test Team%").destroy_all
-    Race.where("name LIKE ?", "Test Race%").destroy_all
+    puts "🌱 Seeding payment tiers test using factories..."
 
-    # Create captain
-    captain = User.create!(
+    # Generate unique ID for credentials file (must be passed from Playwright for concurrency)
+    unique_id = ENV['TEST_UNIQUE_ID'] || SecureRandom.uuid
+    credentials_file = Rails.root.join('tmp', "test_credentials_#{unique_id}.json")
+
+    # Create captain with known password
+    captain = FactoryBot.create(:user,
       first_name: "Captain",
       last_name: "Tester",
-      email: "test+captain@example.com",
-      phone: "555-100-1000",
+      email: "captain-#{unique_id}@example.com",
       password: "password123",
       password_confirmation: "password123"
     )
 
     # Create race
-    race = Race.create!(
-      name: "Test Race Payment #{Time.now.to_i}",
-      race_datetime: 30.days.from_now,
-      registration_open: 10.days.ago,
-      registration_close: 20.days.from_now,
-      final_edits_close: 21.days.from_now,
-      max_teams: 100,
-      people_per_team: 5
+    race = FactoryBot.create(:race,
+      name: "Race #{unique_id[0..7]}",
+      people_per_team: 5,
+      max_teams: 100
     )
 
     # Payment requirement #1: Single tier (mock success)
@@ -158,8 +156,8 @@ namespace :test_seeds do
     Tier.create!(requirement: pr2, price: 5000, begin_at: 1.day.ago)  # Active: $50
     Tier.create!(requirement: pr2, price: 6000, begin_at: 10.days.from_now) # Late: $60
 
-    # Create team with 5 people
-    team = Team.create!(
+    # Create team with 5 people using factory
+    team = FactoryBot.create(:team,
       name: "Test Team Payment",
       description: "Test team for payment tiers",
       experience: 1,
@@ -168,16 +166,22 @@ namespace :test_seeds do
     )
 
     5.times do |i|
-      Person.create!(
+      FactoryBot.create(:person,
         team: team,
-        first_name: "Person#{i + 1}",
-        last_name: "Member",
-        email: "test+person#{i + 1}@example.com",
-        phone: "555-#{200 + i}-#{3000 + i}",
-        zipcode: "60601",
-        experience: i
+        email: "person#{i + 1}-#{unique_id}@example.com"
       )
     end
+
+    # Write credentials to unique temp file for Playwright tests
+    credentials = {
+      captain_email: captain.email,
+      captain_password: "password123",
+      race_id: race.id,
+      race_name: race.name,
+      team_id: team.id,
+      team_name: team.name
+    }
+    File.write(credentials_file, credentials.to_json)
 
     puts "✅ Seeded!"
     puts "  Captain: #{captain.email} / password123"
@@ -185,21 +189,24 @@ namespace :test_seeds do
     puts "  Team: #{team.name} (ID: #{team.id})"
     puts "  Payment #1: #{pr1.name} - 1 tier ($50)"
     puts "  Payment #2: #{pr2.name} - 3 tiers (tier 2 active: $50)"
+    puts "  Credentials file: #{credentials_file}"
   end
 
   desc "Clean up all test data"
   task cleanup: :environment do
     puts "🧹 Cleaning up test data..."
 
+    # Count before deletion (exclude the static admin user)
     count = {
-      users: User.where("email LIKE ?", "%test+%").count,
+      users: User.where("email LIKE ? AND email != ?", "%@example.com", "test+admin@example.com").count,
       teams: Team.where("name LIKE ?", "Test Team%").count,
-      races: Race.where("name LIKE ?", "Test Race%").count
+      races: Race.where("name LIKE ?", "Race %").count
     }
 
-    User.where("email LIKE ?", "%test+%").destroy_all
+    # Delete test data (keep the static admin user)
+    User.where("email LIKE ? AND email != ?", "%@example.com", "test+admin@example.com").destroy_all
     Team.where("name LIKE ?", "Test Team%").destroy_all
-    Race.where("name LIKE ?", "Test Race%").destroy_all
+    Race.where("name LIKE ?", "Race %").destroy_all
 
     puts "  ✓ Deleted #{count[:users]} test users"
     puts "  ✓ Deleted #{count[:teams]} test teams"

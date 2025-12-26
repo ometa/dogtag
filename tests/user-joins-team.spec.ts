@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { execSync } from 'child_process';
+import { readFileSync, unlinkSync, existsSync } from 'fs';
+import { randomUUID } from 'crypto';
+import { join } from 'path';
 
 /**
  * Integration Test: Captain Adds Fifth Person and Triggers Team Finalization
@@ -12,22 +15,46 @@ import { execSync } from 'child_process';
  * 5. Background job is queued to finalize the team
  */
 
+interface TestCredentials {
+  captain_email: string;
+  captain_password: string;
+  race_id: number;
+  race_name: string;
+  team_id: number;
+  team_name: string;
+}
+
+// Generate unique ID for this test run (supports high concurrency)
+const testUniqueId = randomUUID();
+const credentialsFile = join(process.cwd(), 'tmp', `test_credentials_${testUniqueId}.json`);
+
+let credentials: TestCredentials;
+
 test.describe('User Registration and Team Finalization', () => {
   test.beforeAll(async () => {
-    execSync('bundle exec rails test_seeds:cleanup && bundle exec rails test_seeds:basic', { stdio: 'inherit' });
+    // Seed test data with unique ID
+    execSync(`TEST_UNIQUE_ID=${testUniqueId} bundle exec rails test_seeds:basic`, { stdio: 'inherit' });
+
+    // Read credentials from file
+    credentials = JSON.parse(readFileSync(credentialsFile, 'utf-8'));
+  });
+
+  test.afterAll(async () => {
+    // Clean up credentials file
+    if (existsSync(credentialsFile)) {
+      unlinkSync(credentialsFile);
+    }
+    console.log('\n📝 Reminder: Run `rails test_seeds:cleanup` to remove test data');
   });
 
   test('captain adds fifth person and triggers finalization', async ({ page }) => {
-    // Test credentials (from test_seeds:basic task)
-    const captainUser = {
-      email: 'test+captain@example.com',
-      password: 'password123',
-    };
+    // Generate unique identifier for new person
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
     const fifthPerson = {
       firstName: 'Fifth',
       lastName: 'Joiner',
-      email: 'test+fifth@example.com',
+      email: `fifth-${uniqueId}@example.com`,
       phone: '555-999-8888',
       zipcode: '60601'
     };
@@ -56,10 +83,10 @@ test.describe('User Registration and Team Finalization', () => {
       const emailInput = page.locator('input[type="text"]').first().or(
         page.locator('input:not([type="hidden"])').first()
       );
-      await emailInput.fill(captainUser.email);
+      await emailInput.fill(credentials.captain_email);
 
       const passwordInput = page.locator('input[type="password"]');
-      await passwordInput.fill(captainUser.password);
+      await passwordInput.fill(credentials.captain_password);
 
       // Submit login form
       await page.getByRole('button', { name: /log ?in/i }).click();
@@ -74,68 +101,17 @@ test.describe('User Registration and Team Finalization', () => {
       const racesLink = page.getByRole('link', { name: /races/i });
       await racesLink.click();
 
-      // Should see the test race (it has a unique timestamp name)
-      await expect(page.getByText(/Test Race/)).toBeVisible();
+      // Should see the test race - use the race name from credentials
+      await expect(page.getByText(credentials.race_name)).toBeVisible();
 
       // Click on the test race to view details
-      await page.getByText(/Test Race/).first().click();
+      await page.getByText(credentials.race_name).first().click();
     });
 
-    // Step 4: Navigate to team add person page via direct URL
+    // Step 4: Navigate to team add person page
     await test.step('Navigate directly to add person form', async () => {
-      // NOTE: The user doesn't have permission to view team details via the UI,
-      // so we navigate directly to the add person form.
-      // In a real scenario, the team captain would share this link with the 5th person,
-      // or the user would receive it via email/invitation.
-
-      // Get the team ID by finding any link to a team on the current page
-      // or use the teams list
-      await page.getByRole('link', { name: /teams registered/i }).click();
-      await page.waitForLoadState('networkidle');
-
-      // Try to find ANY team link on the page to extract a team ID pattern
-      const allLinks = await page.locator('a[href*="/teams/"]').all();
-      let teamId = null;
-
-      // If there are team links (from other teams or other pages), use one as template
-      if (allLinks.length > 0) {
-        const href = await allLinks[0].getAttribute('href');
-        const match = href?.match(/\/teams\/(\d+)/);
-        if (match) {
-          teamId = match[1];
-        }
-      }
-
-      // If we couldn't find it, navigate to the race page and look for the registrations link
-      if (!teamId) {
-        // The team was created by test seeds, so for now we'll navigate to a known pattern
-        // In production, this would come from an invitation link
-        const pageUrl = page.url();
-        const raceMatch = pageUrl.match(/races\/(\d+)/);
-
-        if (raceMatch) {
-          // Navigate to registrations for this race and find the first team
-          await page.goto(`/races/${raceMatch[1]}/registrations`);
-          const firstTeamLink = await page.locator('a[href*="/teams/"]').first();
-          if (await firstTeamLink.isVisible().catch(() => false)) {
-            const href = await firstTeamLink.getAttribute('href');
-            const match = href?.match(/\/teams\/(\d+)/);
-            if (match) {
-              teamId = match[1];
-            }
-          }
-        }
-      }
-
-      // For this test, we know the team from seeds - navigate directly
-      // In a real app, the user would receive this URL from the team captain
-      if (teamId) {
-        await page.goto(`/teams/${teamId}/people/new`);
-      } else {
-        // Fallback: navigate to a predictable URL based on test setup
-        // The test seeds create a team, so we'll try the most recent team
-        await page.goto(`/teams/1247/people/new`); // Known from test seeds
-      }
+      // Navigate directly using team ID from credentials
+      await page.goto(`/teams/${credentials.team_id}/people/new`);
     });
 
     // Step 5: Fill in person details and submit
@@ -165,11 +141,5 @@ test.describe('User Registration and Team Finalization', () => {
       // Verify team finalized - congratulations banner should appear
       await expect(page.locator('#congratulations-user-success')).toBeVisible();
     });
-  });
-
-  // Cleanup test (optional)
-  test.afterAll(async () => {
-    // Note: Run `rails test_seeds:cleanup` manually to clean up test data
-    console.log('\n📝 Reminder: Run `rails test_seeds:cleanup` to remove test data');
   });
 });

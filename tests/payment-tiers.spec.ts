@@ -1,17 +1,41 @@
 import { test, expect } from '@playwright/test';
 import { execSync } from 'child_process';
+import { readFileSync, unlinkSync, existsSync } from 'fs';
+import { randomUUID } from 'crypto';
+import { join } from 'path';
+
+interface TestCredentials {
+  captain_email: string;
+  captain_password: string;
+  race_id: number;
+  race_name: string;
+  team_id: number;
+  team_name: string;
+}
+
+// Generate unique ID for this test run (supports high concurrency)
+const testUniqueId = randomUUID();
+const credentialsFile = join(process.cwd(), 'tmp', `test_credentials_${testUniqueId}.json`);
+
+let credentials: TestCredentials;
 
 test.describe('Payment Requirements and Tiers', () => {
   test.beforeAll(async () => {
-    execSync('bundle exec rails test_seeds:cleanup && bundle exec rails test_seeds:payment_tiers', { stdio: 'inherit' });
+    // Seed test data with unique ID
+    execSync(`TEST_UNIQUE_ID=${testUniqueId} bundle exec rails test_seeds:payment_tiers`, { stdio: 'inherit' });
+
+    // Read credentials from file
+    credentials = JSON.parse(readFileSync(credentialsFile, 'utf-8'));
+  });
+
+  test.afterAll(async () => {
+    // Clean up credentials file
+    if (existsSync(credentialsFile)) {
+      unlinkSync(credentialsFile);
+    }
   });
 
   test('displays both payment requirements with correct active tier', async ({ page }) => {
-    const captain = {
-      email: 'test+captain@example.com',
-      password: 'password123',
-    };
-
     // Login
     await page.goto('/');
     await page.getByText('Login').first().click();
@@ -20,17 +44,17 @@ test.describe('Payment Requirements and Tiers', () => {
     await dropdownLinks.last().click();
 
     const emailInput = page.locator('input[type="text"]').first();
-    await emailInput.fill(captain.email);
+    await emailInput.fill(credentials.captain_email);
     const passwordInput = page.locator('input[type="password"]');
-    await passwordInput.fill(captain.password);
+    await passwordInput.fill(credentials.captain_password);
     await page.getByRole('button', { name: /log ?in/i }).click();
 
     await expect(page.getByText(/login successful/i)).toBeVisible();
 
-    // Navigate to team page
+    // Navigate to team page using credentials
     await page.getByRole('link', { name: /races/i }).click();
-    await page.getByText(/Test Race Payment/).first().click();
-    await page.getByText(/Test Team Payment/i).click();
+    await page.getByText(credentials.race_name).first().click();
+    await page.getByText(credentials.team_name).click();
 
     // Click Payments tab
     await page.getByRole('link', { name: /payments/i }).first().click();
