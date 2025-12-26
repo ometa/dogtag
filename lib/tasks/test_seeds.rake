@@ -138,8 +138,8 @@ namespace :test_seeds do
       people_per_team: 5
     )
 
-    # Payment requirement #1: Single tier
-    pr1 = PaymentRequirement.create!(
+    # Payment requirement #1: Single tier (mock success)
+    pr1 = MockPaymentRequirement.create!(
       name: "Registration Fee",
       race: race
     )
@@ -149,8 +149,8 @@ namespace :test_seeds do
       begin_at: 10.days.ago
     )
 
-    # Payment requirement #2: 3 tiers (tier 2 is active)
-    pr2 = PaymentRequirement.create!(
+    # Payment requirement #2: 3 tiers (tier 2 is active, mock success)
+    pr2 = MockPaymentRequirement.create!(
       name: "Team Fee",
       race: race
     )

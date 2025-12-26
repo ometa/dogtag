@@ -1,0 +1,41 @@
+- if req.completed?(team)
+  %i.fa.fa-check-circle-o.fa-5x.pull-left
+  .lead
+    $
+    = price_in_dollars_and_cents req.cr_for(team).metadata['amount']
+  = t('completed')
+- else
+  - if req.race.open_for_registration?
+    .lead
+      $
+      = price_in_dollars_and_cents(req.active_tier.price)
+
+      - unless req.next_tiers.empty?
+        %small
+          %small
+            %small
+              - req.next_tiers.each do |tier|
+                %br
+                %em
+                  $
+                  = price_in_dollars_and_cents(tier.price)
+                  \:
+                  = tier.begin_at.strftime("%b %e, %Y")
+
+    - if @race.full?
+      %h4.text-warning
+        = t('.no_pay_waitlist')
+    - else
+      %form{method: 'post', action: mock_payment_path}
+        = hidden_field_tag :authenticity_token, form_authenticity_token
+        = hidden_field_tag :requirement_id, req.id
+        = hidden_field_tag :team_id, team.id
+        = hidden_field_tag :amount, req.active_tier.price
+        = hidden_field_tag :mock_behavior, req.mock_behavior
+        %button.btn.btn-primary{type: 'submit', id: "mock-pay-#{req.id}"}
+          = req.mock_success? ? 'Pay (Mock Success)' : 'Pay (Mock Fail)'
+  - else
+    %i.lead.text-danger
+      %i.fa.fa-lock.fa-5x
+      %br
+      = t('.no_complete_when_closed')

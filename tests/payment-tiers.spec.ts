@@ -38,5 +38,16 @@ test.describe('Payment Requirements and Tiers', () => {
     // Verify both show $50 price and Team Fee shows upcoming $60 tier
     await expect(page.locator('text=50.00').first()).toBeVisible();
     await expect(page.locator('text=60.00')).toBeVisible();
+
+    // Verify mock payment buttons are visible
+    await expect(page.getByText('Pay (Mock Success)').first()).toBeVisible();
+
+    // Click first mock payment button to complete payment
+    await page.getByText('Pay (Mock Success)').first().click();
+    await page.waitForLoadState('networkidle');
+
+    // Verify payment completed successfully
+    await expect(page.getByText(/mock payment successful/i)).toBeVisible();
+    await expect(page.getByText(/completed/i)).toBeVisible();
   });
 });
