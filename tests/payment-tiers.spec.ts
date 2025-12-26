@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { execSync } from 'child_process';
 
 test.describe('Payment Requirements and Tiers', () => {
+  test.beforeAll(async () => {
+    execSync('bundle exec rails test_seeds:cleanup && bundle exec rails test_seeds:payment_tiers', { stdio: 'inherit' });
+  });
+
   test('displays both payment requirements with correct active tier', async ({ page }) => {
     const captain = {
       email: 'test+captain@example.com',
@@ -40,14 +45,29 @@ test.describe('Payment Requirements and Tiers', () => {
     await expect(page.locator('text=60.00')).toBeVisible();
 
     // Verify mock payment buttons are visible
-    await expect(page.getByText('Pay (Mock Success)').first()).toBeVisible();
+    const payButtons = await page.getByText('Pay (Mock Success)').all();
+    expect(payButtons.length).toBe(2);
 
-    // Click first mock payment button to complete payment
-    await page.getByText('Pay (Mock Success)').first().click();
+    // Complete first payment (Registration Fee)
+    await payButtons[0].click();
     await page.waitForLoadState('networkidle');
-
-    // Verify payment completed successfully
     await expect(page.getByText(/mock payment successful/i)).toBeVisible();
-    await expect(page.getByText(/completed/i)).toBeVisible();
+
+    // Return to payments tab
+    await page.getByRole('link', { name: /payments/i }).first().click();
+    await page.waitForTimeout(500);
+
+    // Complete second payment (Team Fee)
+    await page.getByText('Pay (Mock Success)').click();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText(/mock payment successful/i)).toBeVisible();
+
+    // Verify team finalized (same success flow as test #1)
+    await expect(page.getByText(/congratulations/i)).toBeVisible();
+    await expect(page.getByText(/complete/i)).toBeVisible();
+
+    // Verify payments tab shows 2 of 2
+    const paymentsCompleted = await page.getByText(/2 of 2/).isVisible().catch(() => false);
+    expect(paymentsCompleted).toBe(true);
   });
 });

@@ -1,5 +1,8 @@
 class MockPaymentsController < ApplicationController
   # Mock payment controller for testing - doesn't connect to Stripe
+  # Only available in development and test environments
+
+  before_action :ensure_dev_or_test_environment
 
   def create
     team = Team.find(params[:team_id])
@@ -31,6 +34,15 @@ class MockPaymentsController < ApplicationController
       # Mock failure
       flash[:error] = "Mock payment declined"
       redirect_to team_path(team)
+    end
+  end
+
+  private
+
+  def ensure_dev_or_test_environment
+    unless Rails.env.development? || Rails.env.test?
+      flash[:error] = "Mock payments are only available in development and test environments"
+      redirect_to root_path
     end
   end
 end
