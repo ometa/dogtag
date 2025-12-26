@@ -108,6 +108,85 @@ namespace :test_seeds do
     puts "   The fifth user can now join the team to trigger finalization."
   end
 
+  desc "Create race with 2 payment requirements (1 tier and 3 tiers)"
+  task payment_tiers: :environment do
+    puts "🌱 Seeding payment tiers test..."
+
+    # Clean up
+    User.where("email LIKE ?", "%test+%").destroy_all
+    Team.where("name LIKE ?", "Test Team%").destroy_all
+    Race.where("name LIKE ?", "Test Race%").destroy_all
+
+    # Create captain
+    captain = User.create!(
+      first_name: "Captain",
+      last_name: "Tester",
+      email: "test+captain@example.com",
+      phone: "555-100-1000",
+      password: "password123",
+      password_confirmation: "password123"
+    )
+
+    # Create race
+    race = Race.create!(
+      name: "Test Race Payment #{Time.now.to_i}",
+      race_datetime: 30.days.from_now,
+      registration_open: 10.days.ago,
+      registration_close: 20.days.from_now,
+      final_edits_close: 21.days.from_now,
+      max_teams: 100,
+      people_per_team: 5
+    )
+
+    # Payment requirement #1: Single tier
+    pr1 = PaymentRequirement.create!(
+      name: "Registration Fee",
+      race: race
+    )
+    Tier.create!(
+      requirement: pr1,
+      price: 5000, # $50.00
+      begin_at: 10.days.ago
+    )
+
+    # Payment requirement #2: 3 tiers (tier 2 is active)
+    pr2 = PaymentRequirement.create!(
+      name: "Team Fee",
+      race: race
+    )
+    Tier.create!(requirement: pr2, price: 4000, begin_at: 10.days.ago) # Early: $40
+    Tier.create!(requirement: pr2, price: 5000, begin_at: 1.day.ago)  # Active: $50
+    Tier.create!(requirement: pr2, price: 6000, begin_at: 10.days.from_now) # Late: $60
+
+    # Create team with 5 people
+    team = Team.create!(
+      name: "Test Team Payment",
+      description: "Test team for payment tiers",
+      experience: 1,
+      race: race,
+      user: captain
+    )
+
+    5.times do |i|
+      Person.create!(
+        team: team,
+        first_name: "Person#{i + 1}",
+        last_name: "Member",
+        email: "test+person#{i + 1}@example.com",
+        phone: "555-#{200 + i}-#{3000 + i}",
+        zipcode: "60601",
+        experience: i
+      )
+    end
+
+    puts "✅ Seeded!"
+    puts "  Captain: #{captain.email} / password123"
+    puts "  Race: #{race.name} (ID: #{race.id})"
+    puts "  Team: #{team.name} (ID: #{team.id})"
+    puts "  Payment #1: #{pr1.name} - 1 tier ($50)"
+    puts "  Payment #2: #{pr2.name} - 3 tiers (tier 2 active: $50)"
+  end
+
   desc "Clean up all test data"
   task cleanup: :environment do
     puts "🧹 Cleaning up test data..."
