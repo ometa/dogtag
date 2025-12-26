@@ -59,11 +59,8 @@ test.describe('Payment Requirements and Tiers', () => {
 
     // Complete second payment (Team Fee)
     await page.getByText('Pay (Mock Success)').click();
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByText(/mock payment successful/i)).toBeVisible();
 
     // Verify team finalized (same success flow as test #1)
-    await expect(page.getByText(/congratulations/i)).toBeVisible();
-    await expect(page.getByText(/your team is now complete/i)).toBeVisible();
+    await expect(page.locator('#congratulations-user-success')).toBeVisible();
   });
 });

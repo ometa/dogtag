@@ -162,37 +162,8 @@ test.describe('User Registration and Team Finalization', () => {
 
     // Step 6: Verify successful person addition and team finalization
     await test.step('Verify team finalization', async () => {
-      // Captain has full access to team page, so we should see the team show page
-      const url = page.url();
-      expect(url).toContain('/teams/');
-
-      // Look for the team heading or success indicators
-      // The team should now show 5 people
-      const hasFivePeople = await page.getByText(/5.*5|5 of 5/i).isVisible({ timeout: 3000 }).catch(() => false);
-      const hasTeamName = await page.getByText(/Test Team Awesome/i).isVisible({ timeout: 3000 }).catch(() => false);
-
-      if (hasFivePeople || hasTeamName) {
-        console.log('✓ Person added successfully - team now has 5 people');
-        console.log('✓ Team finalization job queued in background');
-      }
-
-      // Verify we can see the team page (captain has access)
-      expect(hasTeamName || hasFivePeople).toBeTruthy();
-    });
-
-    // Step 7: Verify user receives confirmation (if applicable)
-    await test.step('Check for confirmation notification', async () => {
-      // This step depends on your app's notification system
-      // Common patterns: email sent message, on-page notification, etc.
-
-      // Example: Check for flash message or notification
-      const confirmation = page.getByText(/confirmation|email sent|notif/i);
-
-      // Only check if notification exists (might not be shown on same page)
-      const isVisible = await confirmation.isVisible().catch(() => false);
-      if (isVisible) {
-        console.log('✓ Confirmation notification displayed');
-      }
+      // Verify team finalized - congratulations banner should appear
+      await expect(page.locator('#congratulations-user-success')).toBeVisible();
     });
   });
 
