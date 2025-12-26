@@ -53,12 +53,14 @@ class ApplicationController < ActionController::Base
 
   def render_not_found(ex)
     log_error(ex)
-    render template: "/error/404.html.erb", status: :not_found
+    # Rails 7.0: Don't include file extension in template path
+    render template: "/error/404", status: :not_found
   end
 
   def render_400(ex)
     log_error(ex)
-    render template: "/error/400.html.erb", status: :bad_request
+    # Rails 7.0: Don't include file extension in template path
+    render template: "/error/400", status: :bad_request
   end
 
   def render_access_denied(ex)
@@ -68,7 +70,8 @@ class ApplicationController < ActionController::Base
 
   def render_error(ex)
     log_error(ex)
-    render template: "/error/500.html.erb", status: :internal_server_error
+    # Rails 7.0: Don't include file extension in template path
+    render template: "/error/500", status: :internal_server_error
   end
 
   def log_error(ex)
@@ -143,7 +146,10 @@ class ApplicationController < ActionController::Base
   end
 
   def redirect_back_or_default(default)
-    redirect_to(session[:return_to] || default)
+    url = session[:return_to] || default
     session[:return_to] = nil
+
+    # Rails 7.0: redirect_to blocks external hosts by default for security
+    redirect_to(url)
   end
 end

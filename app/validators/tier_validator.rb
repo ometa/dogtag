@@ -24,28 +24,35 @@ class TierValidator < ActiveModel::Validator
 
   def validate_unique_begin_at(record)
     tiers = non_self_tiers(record)
-    return unless tiers
-    dates = tiers.map(&:begin_at)
-    if dates.include? record.begin_at
-      record.errors[:begin_at] << 'must be unique per payment requirement'
+    return unless tiers.present?
+    # Rails 7.0: Use any? with explicit comparison instead of include?
+    # to handle datetime precision issues
+    if tiers.any? { |t| t.begin_at == record.begin_at }
+      record.errors.add(:begin_at, 'must be unique per payment requirement')
     end
   end
 
   def validate_unique_price(record)
     tiers = non_self_tiers(record)
     return unless tiers.present?
-    prices = tiers.map(&:price)
-    if prices.include? record.price
-      record.errors[:price] << 'must be unique per payment requirement'
+    # Rails 7.0: Use any? with explicit comparison
+    if tiers.any? { |t| t.price == record.price }
+      record.errors.add(:price, 'must be unique per payment requirement')
     end
   end
 
   # helper method
 
   def non_self_tiers(record)
-    if record.requirement.present? && record.requirement.tiers.present?
-      tiers = record.requirement.tiers
-      tiers.reject { |t| t == record }
-    end
+    return [] unless record.requirement.present?
+
+    # Rails 7.0: Explicitly reload association to get current state from database
+    # This ensures we see all previously saved tiers
+    record.requirement.tiers.reload if record.requirement.tiers.loaded?
+    tiers = record.requirement.tiers.to_a
+
+    # Filter out the current record by comparing database IDs
+    # (can't use object_id since reloaded records have different object_ids)
+    tiers.reject { |t| t.id.present? && t.id == record.id }
   end
 end

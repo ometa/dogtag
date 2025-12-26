@@ -134,10 +134,12 @@ class ChargesController < ApplicationController
   def require_stripe_params
     inquiry = params.require(STRIPE_PARAMS)
   rescue ActionController::ParameterMissing => e
+    # Rails 7.0: Strip "Did you mean?" suggestions from error message
+    error_message = e.message.split("\n").first
     render(
       status: :bad_request,
       json: {
-        errors: e
+        errors: error_message
       }
     )
   end
