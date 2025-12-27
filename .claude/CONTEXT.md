@@ -1,7 +1,8 @@
 # Dogtag - Rails 7.0 Upgrade: Production Deployment Context
 
-**Last Updated**: 2025-12-26 10:06 CST
+**Last Updated**: 2025-12-26 21:52 CST
 **Branch**: `db/ruby3`
+**Current HEAD**: `b4ef458`
 **Status**: ✅ **STAGING DEPLOYED - Monitoring for 24h before production**
 
 ---
@@ -72,31 +73,45 @@ You are a prestigious computer science engineer at Oxford University. Your tenur
 
 ### Test Results
 ```
-547 examples, 3 failures, 29 pending
-Coverage: 95.72% (baseline: 95.74% - within 0.02%)
+RSpec: 547 examples, 0 failures, 29 pending ✅
+Playwright: 3 passed (integration tests)
+Coverage: 95.73%
 ```
 
-**Remaining Failures (All Acceptable - Pre-existing or Edge Cases)**:
-1. `spec/workers/classy_create_fundraising_team_spec.rb:132` - Pre-existing classy_id type issue (not blocking)
-2. `spec/controllers/users_controller_spec.rb` - Authlogic 6.x password validation edge cases (2 tests, not blocking)
+**All Tests Passing!**
+
+**Fixed This Session**:
+- ✅ `spec/workers/classy_create_fundraising_team_spec.rb:132` - Fixed classy_id type consistency
+- ✅ Changed teams.classy_id from string to integer (migration + code updates)
 
 ---
 
-## Upgrade History (5 Commits on db/ruby3)
+## Upgrade History (Commits on db/ruby3)
 
+### Core Upgrade Commits
 1. `e727404` - Upgrade to Rails 6.0.6.1 (547 examples, 3 failures)
 2. `80735e0` - Upgrade to Rails 6.1.7.10 (547 examples, 15 failures)
 3. `689885d` - Upgrade to Rails 7.0.10 (547 examples, 43 failures)
 4. `ad94716` - Upgrade to Ruby 3.1.7 (547 examples, 43 failures - no regression)
-5. `26b5369` - Fix Rails 7.0 test failures (547 examples, 3 failures) ⭐ **Current HEAD**
+5. `26b5369` - Fix Rails 7.0 test failures (547 examples, 3 failures)
 
-### What Was Fixed in Latest Commit (26b5369)
-All Rails 7.0 breaking changes resolved:
+### Recent Commits (This Session)
+6. `c1a6b04` - Configure Playwright for sequential test execution with auto server
+7. `bae96fb` - Add Ruby 3.1.7 to CircleCI test matrix
+8. `7cba95f` - Fix classy_id type consistency for Ruby 3.1 compatibility
+9. `b4ef458` - Change teams.classy_id from string to integer ⭐ **Current HEAD**
+
+### What Was Fixed
+**Rails 7.0 Breaking Changes (All Resolved)**:
 - Updated error syntax in validators (`errors.add()` API)
 - Fixed template paths (removed `.html.erb` extensions)
 - Fixed association reloading in TierValidator
 - Updated test mocks for removed methods (`update_attributes` → `update`)
 - Changed redirect test to use internal URLs only (security best practice)
+
+**Ruby 3.1 Compatibility**:
+- Fixed classy_id type coercion (explicit `.to_s` for string columns)
+- Factory updated to use string values for classy_id
 
 **No shortcuts remain - all fixes are proper and production-ready.**
 
@@ -274,7 +289,7 @@ heroku logs --tail -r heroku
 ## Testing Commands (Local)
 
 ```bash
-# Full test suite
+# Full RSpec test suite
 bundle exec rspec --format progress
 
 # Quick status check
@@ -284,10 +299,29 @@ bundle exec rspec --format progress 2>&1 | tail -5
 bundle exec rspec spec/models/ --format progress
 bundle exec rspec spec/controllers/ --format progress
 
+# Playwright integration tests (auto-starts server on port 3099)
+npm run test
+
 # Verify versions
 ruby -v           # Should show 3.1.7
 bundle exec rails -v    # Should show 7.0.10
 ```
+
+---
+
+## CI/CD Configuration
+
+### CircleCI
+- **Config**: `.circleci/config.yml`
+- **Ruby versions tested**: 2.7.8, 3.1.7 (matrix build)
+- **Database**: PostgreSQL 14.6
+
+### Playwright Integration Tests
+- **Config**: `playwright.config.ts`
+- **Tests**: `tests/*.spec.ts`
+- **Port**: 3099 (auto-started WEBrick server)
+- **Execution**: Sequential (workers: 1) - WEBrick is single-threaded
+- **Global setup**: Cleans database before test suite
 
 ---
 
@@ -384,5 +418,22 @@ bundle exec rails -v    # Should show 7.0.10
 
 ---
 
-**Last verified**: 2025-12-26 10:06 CST
+**Last verified**: 2025-12-26 12:05 CST
 **Next action**: Monitor staging for 24 hours, then deploy to production with `git push heroku db/ruby3:main` (requires explicit confirmation)
+
+---
+
+## Session Notes (2025-12-26)
+
+### Completed Tasks
+1. ✅ Configured Playwright to auto-start/stop test server (port 3099)
+2. ✅ Fixed parallel execution issues (set workers: 1 for WEBrick compatibility)
+3. ✅ Added global setup for database cleanup before test suite
+4. ✅ Added Ruby 3.1.7 to CircleCI test matrix
+5. ✅ Fixed classy_id type consistency bug for Ruby 3.1 compatibility
+6. ✅ Migrated teams.classy_id from string to integer (with data conversion)
+
+### Pending (Not Pushed to Origin)
+- Commits `c1a6b04`, `bae96fb`, `7cba95f`, `b4ef458` are local only
+- User must push to origin manually (git push restricted to heroku remotes only)
+- **Note**: Migration `20251227035004_change_teams_classy_id_to_integer` needs to run on staging/production
