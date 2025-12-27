@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_12_09_125509) do
+ActiveRecord::Schema[7.0].define(version: 2025_12_27_035004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -95,7 +95,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_12_09_125509) do
     t.text "jsonform"
     t.boolean "finalized"
     t.integer "assigned_team_number"
-    t.string "classy_id"
+    t.integer "classy_id"
     t.integer "classy_fundraiser_page_id"
     t.index ["race_id"], name: "index_teams_on_race_id"
   end

@@ -37,7 +37,7 @@ class ClassyUser
     # a 200 response means the classy API created both a member and supporter record
     # and it returns the classy member id, which we need later to create fundraising teams
     if response.ok?
-      user.classy_id = b['id']
+      user.classy_id = b['id'].to_i
       user.save!
       Rails.logger.info "successfully created classy organization member & supporter with classy id: #{user.classy_id}"
       return user
@@ -56,7 +56,7 @@ class ClassyUser
 
       # a 200 response means the classy API created a supporter record and we are done
       if response.ok?
-        user.classy_id = b['member_id']
+        user.classy_id = b['member_id'].to_i
         user.save!
         Rails.logger.info "successfully created classy organization supporter with classy id: #{user.classy_id}"
         return user
