@@ -48,7 +48,7 @@ module Workers
 
       cc = ClassyClient.new
       result = cc.create_fundraising_team(campaign_id, team.name, team.description, user.classy_id, default_goal)
-      team.classy_id = result['id'].to_s
+      team.classy_id = result['id'].to_i
       team.save!
       log[:response] = result
       log[:message] = "Success adding a classy fundraising team for team id: #{team.id}"
