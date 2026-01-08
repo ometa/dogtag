@@ -14,9 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with dogtag.  If not, see <http://www.gnu.org/licenses/>.
 class User < ApplicationRecord
+  before_validation :downcase_email
+
   validates :first_name, :last_name, :phone, :email, presence: true
   validates :email, format: { :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i }
   validates :email, uniqueness: { case_sensitive: false }
+  validate :email_must_be_lowercase
 
   has_many :completed_requirements
   has_many :teams
@@ -70,5 +73,18 @@ class User < ApplicationRecord
   def reset_password!(host)
     reset_perishable_token!
     Workers::PasswordResetEmail.perform_async({'user_id' => self.id, 'host' => host})
+  end
+
+  private
+
+  def downcase_email
+    self.email = email.downcase if email.present?
+  end
+
+  def email_must_be_lowercase
+    return if email.blank?
+    if email != email.downcase
+      errors.add(:email, 'must be lowercase')
+    end
   end
 end

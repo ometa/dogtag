@@ -52,7 +52,50 @@ describe User do
       end
     end
 
-    describe 'email'
+    describe 'email' do
+      let(:user) { FactoryBot.build(:user) }
+
+      it 'downcases email before validation' do
+        user.email = 'TestUser@Example.COM'
+        user.valid?
+        expect(user.email).to eq('testuser@example.com')
+      end
+
+      it 'saves email as lowercase' do
+        user.email = 'UPPERCASE@EMAIL.COM'
+        user.save!
+        expect(user.reload.email).to eq('uppercase@email.com')
+      end
+
+      it 'handles mixed case emails' do
+        user.email = 'MixedCase@Email.Com'
+        user.save!
+        expect(user.reload.email).to eq('mixedcase@email.com')
+      end
+
+      it 'does not modify already lowercase emails' do
+        user.email = 'lowercase@email.com'
+        user.save!
+        expect(user.reload.email).to eq('lowercase@email.com')
+      end
+
+      context 'when email bypasses callback' do
+        it 'fails validation if email contains uppercase characters' do
+          user.save!
+          # Bypass the callback by directly updating the column
+          user.update_column(:email, 'Uppercase@Email.Com')
+          # Skip callback to test the validation directly
+          User.skip_callback(:validation, :before, :downcase_email)
+          begin
+            user.reload
+            expect(user).not_to be_valid
+            expect(user.errors[:email]).to include('must be lowercase')
+          ensure
+            User.set_callback(:validation, :before, :downcase_email)
+          end
+        end
+      end
+    end
   end
 
   describe '#gets_admin_menu?' do

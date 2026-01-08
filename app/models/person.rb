@@ -14,8 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with dogtag.  If not, see <http://www.gnu.org/licenses/>.
 class Person < ApplicationRecord
+  before_validation :downcase_email
+
   validates :first_name, :last_name, :email, :phone, :zipcode, presence: true
   validates :email, format: { :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i }
+  validate :email_must_be_lowercase
   validates :twitter, format: { :with => /\A^@\w+\z/i, :allow_nil => true, :allow_blank => true, :message => 'needs to begin with @ and be one word' }
   validates :zipcode, format: { :with => /\A\d{5}(-\d{4})?\z/, :message => "should be in the form 12345 or 12345-1234" }
   validates :phone, format: { :with => /\A\d{3}-\d{3}-\d{4}\z/, :message => "should be in the form 555-867-5309" }
@@ -35,6 +38,19 @@ class Person < ApplicationRecord
     race = Race.find race_id
     race.finalized_teams.inject([]) do |total, reg|
       total.concat(reg.people.reject{ |person| person.email.downcase =~ /unknown/})
+    end
+  end
+
+  private
+
+  def downcase_email
+    self.email = email.downcase if email.present?
+  end
+
+  def email_must_be_lowercase
+    return if email.blank?
+    if email != email.downcase
+      errors.add(:email, 'must be lowercase')
     end
   end
 end
