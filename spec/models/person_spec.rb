@@ -80,6 +80,48 @@ describe 'validation' do
     end
   end
 
+  describe 'email downcasing' do
+    let(:team) { FactoryBot.create :team }
+
+    it 'downcases email before validation' do
+      person = FactoryBot.build(:person, team: team, email: 'TestPerson@Example.COM')
+      person.valid?
+      expect(person.email).to eq('testperson@example.com')
+    end
+
+    it 'saves email as lowercase' do
+      person = FactoryBot.create(:person, team: team, email: 'UPPERCASE@EMAIL.COM')
+      expect(person.reload.email).to eq('uppercase@email.com')
+    end
+
+    it 'handles mixed case emails' do
+      person = FactoryBot.create(:person, team: team, email: 'MixedCase@Email.Com')
+      expect(person.reload.email).to eq('mixedcase@email.com')
+    end
+
+    it 'does not modify already lowercase emails' do
+      person = FactoryBot.create(:person, team: team, email: 'lowercase@email.com')
+      expect(person.reload.email).to eq('lowercase@email.com')
+    end
+
+    context 'when email bypasses callback' do
+      it 'fails validation if email contains uppercase characters' do
+        person = FactoryBot.create(:person, team: team)
+        # Bypass the callback by directly updating the column
+        person.update_column(:email, 'Uppercase@Email.Com')
+        # Skip callback to test the validation directly
+        Person.skip_callback(:validation, :before, :downcase_email)
+        begin
+          person.reload
+          expect(person).not_to be_valid
+          expect(person.errors[:email]).to include('must be lowercase')
+        ensure
+          Person.set_callback(:validation, :before, :downcase_email)
+        end
+      end
+    end
+  end
+
   it 'passes when twitter starts with an @ sign' do
     expect(FactoryBot.build(:person, :twitter => 'bad')).to be_invalid
     expect(FactoryBot.build(:person, :twitter => '@good')).to be_valid
