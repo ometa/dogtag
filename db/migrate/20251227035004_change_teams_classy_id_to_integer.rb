@@ -1,5 +1,9 @@
 class ChangeTeamsClassyIdToInteger < ActiveRecord::Migration[7.0]
   def up
+    # Check if column is already an integer (idempotent migration)
+    column = connection.columns(:teams).find { |c| c.name == 'classy_id' }
+    return if column && column.type == :integer
+
     # Convert string classy_id to integer
     # PostgreSQL USING clause handles the conversion of existing string data
     # NULL values remain NULL, empty strings become NULL

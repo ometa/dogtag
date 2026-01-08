@@ -35,7 +35,7 @@ services:
     command: bundle exec sidekiq -t 10 -C ./config/sidekiq.yml
 
   db:
-    image: postgres:14.7-alpine
+    image: postgres:17-alpine
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_HOST_AUTH_METHOD=trust
