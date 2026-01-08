@@ -15,10 +15,10 @@
 # along with dogtag.  If not, see <http://www.gnu.org/licenses/>.
 FactoryBot.define do
   factory :person do
-    first_name { "Bill" }
-    last_name { "Murray" }
-    email { "bill@ghostbusters.com" }
-    phone { "123-345-6789" }
+    sequence(:first_name) { |n| "Person#{n}" }
+    sequence(:last_name) { |n| "Member#{n}" }
+    sequence(:email) { |n| "person#{n}@example.com" }
+    sequence(:phone) { |n| "555-#{100 + n}-#{1000 + n}" }
     experience { 3 }
     zipcode { '12345' }
     association :team, strategy: :build

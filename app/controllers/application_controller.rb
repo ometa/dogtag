@@ -18,8 +18,7 @@ class ApplicationController < ActionController::Base
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
 
-  # SSL
-  force_ssl :if => :is_production?
+  # SSL - moved to config/environments/production.rb as config.force_ssl per Rails 6.0 upgrade guide
 
   helper :all
   helper_method :current_user
@@ -54,12 +53,14 @@ class ApplicationController < ActionController::Base
 
   def render_not_found(ex)
     log_error(ex)
-    render template: "/error/404.html.erb", status: :not_found
+    # Rails 7.0: Don't include file extension in template path
+    render template: "/error/404", status: :not_found
   end
 
   def render_400(ex)
     log_error(ex)
-    render template: "/error/400.html.erb", status: :bad_request
+    # Rails 7.0: Don't include file extension in template path
+    render template: "/error/400", status: :bad_request
   end
 
   def render_access_denied(ex)
@@ -69,7 +70,8 @@ class ApplicationController < ActionController::Base
 
   def render_error(ex)
     log_error(ex)
-    render template: "/error/500.html.erb", status: :internal_server_error
+    # Rails 7.0: Don't include file extension in template path
+    render template: "/error/500", status: :internal_server_error
   end
 
   def log_error(ex)
@@ -79,7 +81,7 @@ class ApplicationController < ActionController::Base
   ## common functions used in controllers ------
 
   def try_to_update(obj_to_update, attributes_to_apply, redirect_to_url, success_msg='update_success')
-    if obj_to_update.update_attributes(attributes_to_apply)
+    if obj_to_update.update(attributes_to_apply)
       flash[:notice] = I18n.t(success_msg)
       redirect_to(redirect_to_url)
     else
@@ -144,7 +146,10 @@ class ApplicationController < ActionController::Base
   end
 
   def redirect_back_or_default(default)
-    redirect_to(session[:return_to] || default)
+    url = session[:return_to] || default
     session[:return_to] = nil
+
+    # Rails 7.0: redirect_to blocks external hosts by default for security
+    redirect_to(url)
   end
 end

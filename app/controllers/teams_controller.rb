@@ -110,7 +110,7 @@ class TeamsController < ApplicationController
       flash.now[:error] << team.errors.messages
     end
 
-    @team.update_attributes(team_params)
+    @team.update(team_params)
   end
 
   # TODO: only allow delete if no payments

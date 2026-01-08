@@ -133,7 +133,8 @@ describe PeopleController do
 
       context "if update fails" do
         before do
-          expect_any_instance_of(Person).to receive(:update_attributes).and_return(false)
+          # Rails 6.1+: update_attributes was removed, use update instead
+          expect_any_instance_of(Person).to receive(:update).and_return(false)
           patch :update, params: { :id => person.id, :team_id => team.id, :person => {:last_name => 'foo'} }
         end
 

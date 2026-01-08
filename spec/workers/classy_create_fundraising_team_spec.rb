@@ -120,7 +120,7 @@ describe Workers::ClassyCreateFundraisingTeam do
     context 'when the fundraising team creation is successful' do
       let(:race) { FactoryBot.create :race, :with_classy_data }
       let(:team) { FactoryBot.create :team, race: race }
-      let(:resp) { File.read("#{Rails.root}/spec/fixtures/classy/create_campaign_team_response.json") }
+      let(:resp) { File.read("#{Rails.root.join("spec/fixtures/classy/create_campaign_team_response.json")}") }
       let(:json) { JSON.parse(resp) }
 
       before do

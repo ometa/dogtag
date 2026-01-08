@@ -20,7 +20,7 @@ class Person < ApplicationRecord
   validates :zipcode, format: { :with => /\A\d{5}(-\d{4})?\z/, :message => "should be in the form 12345 or 12345-1234" }
   validates :phone, format: { :with => /\A\d{3}-\d{3}-\d{4}\z/, :message => "should be in the form 555-867-5309" }
   validates :experience, :numericality => { :only_integer => true, :greater_than_or_equal_to => 0 }
-  validates_with PersonValidator, :on => :create
+  validates_with PersonValidator
 
   include Wisper.model
 

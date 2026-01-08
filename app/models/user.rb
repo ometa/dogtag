@@ -16,7 +16,7 @@
 class User < ApplicationRecord
   validates :first_name, :last_name, :phone, :email, presence: true
   validates :email, format: { :with => /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i }
-  validates :email, uniqueness: true
+  validates :email, uniqueness: { case_sensitive: false }
 
   has_many :completed_requirements
   has_many :teams
@@ -28,13 +28,19 @@ class User < ApplicationRecord
   # authlogic
   acts_as_authentic do |c|
     c.login_field = :email
-    c.validate_login_field = false
+    # validate_login_field removed in authlogic 6.x
     c.perishable_token_valid_for = 3.hours
 
     # In version 3.4.0, the default crypto_provider was changed from Sha512 to SCrypt.
     c.transition_from_crypto_providers = [Authlogic::CryptoProviders::Sha512]
     c.crypto_provider = Authlogic::CryptoProviders::SCrypt
   end
+
+  # Password validations for authlogic 6.x
+  # In Authlogic 6.x, we must add explicit password validations
+  attr_accessor :password_confirmation
+  validates :password, presence: true, length: { minimum: 8 }, confirmation: true, if: :require_password?
+  validates :password_confirmation, presence: true, if: :require_password?
 
   # ---------------------------------------------------------------
   # role_model role support for cancan

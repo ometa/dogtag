@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.7.8'
+ruby '3.1.7'
 
 gem 'bootstrap-sass'
 gem 'bootswatch-rails'
@@ -13,8 +13,9 @@ group :production do
   gem 'rollbar'
 end
 
-gem 'authlogic', '~> 4.4.2'  # authentication
-gem 'cancancan', '~> 2.3.0'  # authorization, w/ Rails 4.2 support
+gem 'authlogic', '~> 6.0'  # authentication - Rails 6.0+ support
+gem 'scrypt' # Required by authlogic 6.x for SCrypt crypto provider
+gem 'cancancan', '~> 3.0'  # authorization, Rails 6.0+ support
 gem 'role_model', '~> 0.8.2' # roles
 
 # payments
@@ -24,7 +25,7 @@ gem 'stripe', '~> 1.58.0'
 gem 'activerecord-import'
 
 gem 'pg'
-gem 'json-schema'
+gem 'json-schema', '< 6.0' # v6+ requires Ruby 3.2+
 
 # google analytics
 gem 'rack-tracker'
@@ -38,11 +39,7 @@ gem 'oj'
 # requird until upgrade
 gem "ffi", "< 1.17.0"
 
-gem 'rails', '~> 5.2.8'
-# locking psych < 4 mitigates https://stackoverflow.com/questions/71191685/visit-psych-nodes-alias-unknown-alias-default-psychbadalias
-gem 'psych', '< 4'
-# newer versions of rdoc depend on psych 4+
-gem 'rdoc', '~> 6.3.3'
+gem 'rails', '~> 7.0.0'
 
 # Use unicorn as the app server (heroku)
 gem 'unicorn'
@@ -91,6 +88,7 @@ group :development do
   gem 'web-console'
   gem 'listen'
   gem 'capistrano'
+  gem 'webrick' # Development server for Rails 7+
 end
 
 group :test do

@@ -363,7 +363,8 @@ describe TeamsController do
 
         it 'does not cache this page' do
           get :show, params: { :id => team.id }
-          expect(response.headers['Cache-Control']).to eq('no-cache, no-store')
+          # Rails 7.0: Cache-Control header changed from 'no-cache, no-store' to 'no-store'
+          expect(response.headers['Cache-Control']).to eq('no-store')
           expect(response.headers['Pragma']).to eq('no-cache')
         end
 

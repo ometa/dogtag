@@ -128,7 +128,7 @@
     %h2
       - if @team.needs_people?
         - if @team.race.open_for_registration? || current_user.is_any_of?(:admin, :operator)
-          = link_to new_team_person_url(@team.id) do
+          = link_to new_team_person_url(@team.id), id: 'add-person-to-team' do
             %i.fa.fa-plus.fa-2x
       - else
         %i.fa.fa-smile-o.text-success
@@ -193,7 +193,9 @@
                   .clearfix
                 .panel-body.text-center
                   -# todo - render more generically
-                  - if req.type == 'PaymentRequirement'
+                  - if req.type == 'MockPaymentRequirement'
+                    = render 'requirements/mock_payment_requirement', :team => @team, :req => req
+                  - elsif req.type == 'PaymentRequirement'
                     = render 'requirements/payment_requirement', :team => @team, :req => req
 
     - else

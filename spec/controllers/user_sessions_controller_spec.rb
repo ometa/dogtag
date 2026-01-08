@@ -62,13 +62,13 @@ describe UserSessionsController do
 
         context 'with session[:return_to]' do
           before do
-            session[:return_to] = 'http://somewhere'
+            session[:return_to] = home_url
             post :create, params: { user_session: user_session_hash }
           end
 
           it 'sets flash and redirects to session[:return_to]' do
             expect(flash[:notice]).to eq(I18n.t 'login_success')
-            expect(response).to redirect_to('http://somewhere')
+            expect(response).to redirect_to(home_url)
           end
         end
 

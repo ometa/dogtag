@@ -25,6 +25,9 @@ Rails.application.routes.draw do
     post :refund
   end
 
+  # mock payments for testing
+  post 'mock_payment', to: 'mock_payments#create', as: :mock_payment
+
   # user accounts
   resources :users, :only => [:new, :create, :edit, :update, :index, :show, :destroy]
   resource :user_session, :only => [:new, :create, :destroy]
