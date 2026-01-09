@@ -1,17 +1,17 @@
 # https://circleci.com/docs/2.0/language-ruby/
 version: 2.1
 orbs:
-  ruby: circleci/ruby@2.0.0
+  ruby: circleci/ruby@2.6.0
 references:
   restore: &restore
     restore_cache:
       keys:
-        - v1_bundler_deps-
+        - v2_bundler_deps-{{ .Environment.CIRCLE_JOB }}-{{ checksum "Gemfile.lock" }}
   save: &save
     save_cache:
       paths:
         - ./vendor/bundle
-      key: v1_bundler_deps- # CIRCLE_JOB e.g. "ruby-2.5"
+      key: v2_bundler_deps-{{ .Environment.CIRCLE_JOB }}-{{ checksum "Gemfile.lock" }}
   wait_for_db: &wait_for_db
     run:
       name: Wait for Database
@@ -67,5 +67,5 @@ workflows:
       - test:
           matrix:
             parameters:
-              ruby_version: ["3.1.7"]
+              ruby_version: ["3.4.8"]
               gemfile: ["Gemfile"]

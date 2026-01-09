@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '3.1.7'
+ruby '3.4.8'
 
 gem 'bootstrap-sass'
 gem 'bootswatch-rails'
@@ -25,7 +25,8 @@ gem 'stripe', '~> 1.58.0'
 gem 'activerecord-import'
 
 gem 'pg'
-gem 'json-schema', '< 6.0' # v6+ requires Ruby 3.2+
+gem 'json-schema'
+gem 'csv' # Required as bundled gem in Ruby 3.4+
 
 # google analytics
 gem 'rack-tracker'
