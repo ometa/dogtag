@@ -159,9 +159,18 @@ describe PasswordResetsController do
       context 'when user is found' do
 
         it 'calls the reset operation, sets flash notice, and redirects to home' do
-          expect(User).to receive(:find_by_email).with(user.email).and_return(user)
+          expect(User).to receive(:find_by_email).with(user.email.downcase).and_return(user)
           expect(user).to receive(:reset_password!)
           post :create, params: { email: user.email }
+          expect(flash[:notice]).to eq("Instructions to reset your password have been emailed to you")
+          expect(response).to redirect_to(home_url)
+        end
+
+        it 'finds user with case-insensitive email lookup' do
+          mixed_case_email = user.email.upcase
+          expect(User).to receive(:find_by_email).with(mixed_case_email.downcase).and_return(user)
+          expect(user).to receive(:reset_password!)
+          post :create, params: { email: mixed_case_email }
           expect(flash[:notice]).to eq("Instructions to reset your password have been emailed to you")
           expect(response).to redirect_to(home_url)
         end

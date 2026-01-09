@@ -27,7 +27,7 @@ class PasswordResetsController < ApplicationController
       return render action: :new, status: :bad_request
     end
 
-    @user = User.find_by_email(params[:email])
+    @user = User.find_by_email(params[:email].downcase)
 
     if @user
       @user.reset_password!(request.host_with_port)
