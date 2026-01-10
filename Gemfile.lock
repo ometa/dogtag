@@ -126,6 +126,7 @@ GEM
     cronex (0.15.0)
       tzinfo
       unicode (>= 0.4.4.5)
+    csv (3.3.5)
     dante (0.2.0)
     date (3.5.0)
     diff-lcs (1.6.2)
@@ -484,6 +485,7 @@ DEPENDENCIES
   capistrano
   codeclimate-test-reporter
   coffee-rails
+  csv
   dotenv-rails
   factory_bot_rails
   ffi (< 1.17.0)
@@ -492,7 +494,7 @@ DEPENDENCIES
   httpclient
   jbuilder
   jquery-rails
-  json-schema (< 6.0)
+  json-schema
   kaminari
   libv8-node
   listen
@@ -534,7 +536,7 @@ DEPENDENCIES
   zonebie
 
 RUBY VERSION
-   ruby 3.1.7p261
+  ruby 3.4.8p72
 
 BUNDLED WITH
-   2.3.27
+  4.0.3
