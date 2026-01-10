@@ -19,7 +19,7 @@ module Workers
     include Workers::Common
 
     # run this cronjob no more frequently than this. See config/schedule.yaml
-    LOCK_TTL = 15.minutes
+    LOCK_TTL = 15.minutes.to_i
 
     sidekiq_options queue: :default, retry: false, backtrace: true
     sidekiq_options failures: true
