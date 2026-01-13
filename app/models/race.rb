@@ -70,6 +70,11 @@ class Race < ApplicationRecord
     teams.size - max_teams
   end
 
+  def waitlisted_teams
+    return [] if not_full?
+    Team.all_unfinalized.where(race_id: id).order(:created_at)
+  end
+
   def over?
     race_datetime < Time.zone.now
   end

@@ -292,12 +292,60 @@ describe Team do
   end
 
   describe ".money_paid_in_cents" do
-    it "reports the amount of money a team has paid according to its completed requirements"
+    let(:team) { FactoryBot.create :team }
+
+    it "returns 0 when no completed requirements" do
+      expect(team.money_paid_in_cents).to eq(0)
+    end
+
+    it "reports the amount of money a team has paid according to its completed requirements" do
+      FactoryBot.create :completed_requirement, :with_metadata, team: team, hash: { 'amount' => '5000' }
+      FactoryBot.create :completed_requirement, :with_metadata, team: team, hash: { 'amount' => '2500' }
+      expect(team.money_paid_in_cents).to eq(7500)
+    end
   end
 
   describe '#export' do
-    it 'sets the correct columns'
-    it 'returns a multi-dimensional array of teams'
+    let(:race) { FactoryBot.create :race }
+    let!(:team) { FactoryBot.create :team, :with_enough_people, race: race }
+
+    it 'sets the correct columns' do
+      result = Team.export(race.id)
+      header = result.first
+
+      # Basic columns
+      expect(header).to include('finalized', 'number', 'name', 'experience', 'description')
+
+      # User columns
+      expect(header).to include('user_first_name', 'user_last_name', 'user_email', 'user_phone', 'user_stripe_customer_id')
+
+      # People columns (dawg_0_*, dawg_1_*, etc. based on people_per_team)
+      race.people_per_team.times do |i|
+        expect(header).to include("dawg_#{i}_first_name", "dawg_#{i}_last_name", "dawg_#{i}_email", "dawg_#{i}_phone", "dawg_#{i}_twitter", "dawg_#{i}_experience")
+      end
+    end
+
+    it 'returns a multi-dimensional array of teams' do
+      result = Team.export(race.id)
+
+      expect(result).to be_an(Array)
+      expect(result.size).to eq(2) # header + 1 team
+
+      team_row = result.last
+      expect(team_row).to include(team.name)
+      expect(team_row).to include(team.description)
+    end
+
+    context 'with finalized option' do
+      let!(:unfinalized_team) { FactoryBot.create :team, race: race }
+      let!(:finalized_team) { FactoryBot.create :finalized_team, race: race }
+
+      it 'returns only finalized teams when finalized: true' do
+        result = Team.export(race.id, finalized: true)
+        expect(result.size).to eq(2) # header + 1 finalized team
+        expect(result.last).to include(finalized_team.name)
+      end
+    end
   end
 
   describe '#percent_complete' do
@@ -351,8 +399,28 @@ describe Team do
     end
 
     context 'when race has some jsonschema' do
-      context 'and team does not'
-      context 'and team does also'
+      context 'and team does not' do
+        let(:race) { FactoryBot.create :race_with_jsonform }
+        let(:team) { FactoryBot.create :team, :with_people, race: race }
+
+        it "includes jsonform in total but not in completed" do
+          # total = people_per_team (2) + requirements (0) + jsonform (1) = 3
+          # var = people (1) + requirements (0) + no team jsonform (0) = 1
+          # percent = (1 * 100) / 3 = 33
+          expect(team.percent_complete).to eq(33)
+        end
+      end
+
+      context 'and team does also' do
+        let(:team) { FactoryBot.create :team_with_jsonform, :with_people }
+
+        it "includes jsonform in both total and completed" do
+          # total = people_per_team (2) + requirements (0) + jsonform (1) = 3
+          # var = people (1) + requirements (0) + team jsonform (1) = 2
+          # percent = (2 * 100) / 3 = 66
+          expect(team.percent_complete).to eq(66)
+        end
+      end
     end
   end
 
@@ -371,7 +439,36 @@ describe Team do
   end
 
   describe '#waitlist_position' do
-    it 'returns our position on the waitlist by created_at date'
+    context 'when race is not full' do
+      let(:team) { FactoryBot.create :team }
+
+      it 'returns false' do
+        expect(team.waitlist_position).to be false
+      end
+    end
+
+    context 'when team is finalized' do
+      let(:team) { FactoryBot.create :finalized_team }
+
+      it 'returns false' do
+        allow(team.race).to receive(:not_full?).and_return(false)
+        expect(team.waitlist_position).to be false
+      end
+    end
+
+    context 'when race is full and team is not finalized' do
+      let(:race) { FactoryBot.create :full_race }
+
+      it 'returns our position on the waitlist by created_at date' do
+        first_team = FactoryBot.create :team, race: race, created_at: 1.day.ago
+        second_team = FactoryBot.create :team, race: race, created_at: 1.hour.ago
+        third_team = FactoryBot.create :team, race: race, created_at: Time.zone.now
+
+        expect(first_team.waitlist_position).to eq(1)
+        expect(second_team.waitlist_position).to eq(2)
+        expect(third_team.waitlist_position).to eq(3)
+      end
+    end
   end
 
   describe '#is_full?' do

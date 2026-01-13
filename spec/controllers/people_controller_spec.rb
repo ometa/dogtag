@@ -85,7 +85,16 @@ describe PeopleController do
       # we don't want to remove a person record once we reach the correct number, as
       # it would cause the team to no longer be complete
       context 'when team requirements are all met' do
-        it 'does not destroy the record'
+        let!(:complete_team) { FactoryBot.create :finalized_team }
+        let(:complete_person) { complete_team.people.first }
+
+        it 'does not destroy the record' do
+          person_count_before = Person.count
+          delete :destroy, params: { :team_id => complete_team.id, :id => complete_person.id }
+          expect(Person.count).to eq(person_count_before)
+          expect(flash[:error]).to eq(I18n.t('people.destroy.team_complete'))
+          expect(response).to redirect_to(team_url(id: complete_team.id))
+        end
       end
 
       context 'with valid id' do

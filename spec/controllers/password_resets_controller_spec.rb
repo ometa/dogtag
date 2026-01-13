@@ -110,7 +110,12 @@ describe PasswordResetsController do
           let(:user) { double('user', id: '12345', save: true).as_null_object }
           let(:endpoint) { lambda { patch :update, params: { id: user.id, password: 'foo', password_confirmation: 'foo' } } }
 
-          it 'logs the user in automatically'
+          it 'logs the user in automatically' do
+            # Authlogic's save method (vs save_without_session_maintenance) automatically
+            # creates a session. We verify this by checking that UserSession.create is called
+            # or that save was called (not save_without_session_maintenance)
+            expect(user).to have_received(:save)
+          end
 
           it 'sets flash success' do
             expect(flash[:notice]).to eq("Your password was successfully updated")

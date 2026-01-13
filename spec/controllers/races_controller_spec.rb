@@ -115,26 +115,44 @@ describe RacesController do
     describe '#export' do
       context 'with invalid id' do
         before { get :export, params: { :race_id => 100 } }
+
         it 'sets 404' do
           expect(response.status).to eq(404)
         end
-        it 'sends only finalized data when params[:finalized] is present'
-        it 'sends finalized and non-finalized registrations by default'
-        it 'sends CSV data'
-        it 'sets headers correctly'
       end
 
       context 'with valid id' do
-        before do
-          @team = FactoryBot.create :finalized_team
-          get :show, params: { :id => @team.race.id }
-        end
+        let(:team) { FactoryBot.create :finalized_team }
 
         it 'returns 200' do
+          get :export, params: { :race_id => team.race.id }
           expect(response).to be_successful
         end
-        it 'sends CSV data'
-        it 'handles the finalized param'
+
+        it 'sends CSV data' do
+          get :export, params: { :race_id => team.race.id }
+          expect(response.content_type).to include('text/csv')
+        end
+
+        it 'sets headers correctly' do
+          get :export, params: { :race_id => team.race.id }
+          expect(response.headers['Content-Disposition']).to include("attachment")
+          expect(response.headers['Content-Disposition']).to include("race_#{team.race.id}_export.csv")
+        end
+
+        it 'sends finalized and non-finalized registrations by default' do
+          unfinalized_team = FactoryBot.create :team, race: team.race
+          get :export, params: { :race_id => team.race.id }
+          expect(response.body).to include(team.name)
+          expect(response.body).to include(unfinalized_team.name)
+        end
+
+        it 'sends only finalized data when params[:finalized] is present' do
+          unfinalized_team = FactoryBot.create :team, race: team.race
+          get :export, params: { :race_id => team.race.id, :finalized => true }
+          expect(response.body).to include(team.name)
+          expect(response.body).not_to include(unfinalized_team.name)
+        end
       end
     end
 
@@ -151,13 +169,22 @@ describe RacesController do
           @race = FactoryBot.create :race
           get :show, params: { :id => @race.id }
         end
+
         it 'sets the @race object' do
           expect(assigns(:race)).to eq(@race)
         end
+
         it 'returns 200' do
           expect(response).to be_successful
         end
-        it "sets @my_race_teams to the user's teams for this race"
+
+        it "sets @my_race_teams to the user's teams for this race" do
+          user = controller.send(:current_user)
+          team = FactoryBot.create :team, race: @race, user: user
+          FactoryBot.create :team, race: @race
+          get :show, params: { :id => @race.id }
+          expect(assigns(:my_race_teams)).to eq([team])
+        end
       end
     end
 
@@ -183,7 +210,12 @@ describe RacesController do
           expect(flash[:notice]).to eq(I18n.t 'update_success')
           expect(response).to redirect_to(edit_race_url race.id)
         end
-        it 'converts filter_field array into comma-separated list'
+
+        it 'converts filter_field array into comma-separated list' do
+          race = FactoryBot.create :race
+          patch :update, params: { :id => race.id, :race => { :filter_field => ['field1', 'field2', 'field3'] } }
+          expect(race.reload.filter_field).to eq('field1,field2,field3')
+        end
       end
     end
 
@@ -218,11 +250,18 @@ describe RacesController do
           post :create, params: { :race => valid_race_hash }
         end
 
-        it 'converts filter_field array into comma-separated list'
+        it 'converts filter_field array into comma-separated list' do
+          hash = FactoryBot.attributes_for(:race).merge(:filter_field => ['fieldA', 'fieldB'])
+          expect {
+            post :create, params: { :race => hash }
+          }.to change(Race, :count).by(1)
+          expect(Race.order(:created_at).last.filter_field).to eq('fieldA,fieldB')
+        end
 
         it 'sets a flash notice' do
           expect(flash[:notice]).to eq(I18n.t 'create_success')
         end
+
         it 'redirects to races index' do
           expect(response).to redirect_to races_path
         end

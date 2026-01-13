@@ -224,8 +224,13 @@ describe UsersController do
         end
       end
 
-      # todo: figure out how to mock the delete failing
-      it 'sets flash error and redirects if delete fails'
+      it 'sets flash error and redirects if delete fails' do
+        user = FactoryBot.create :user
+        allow_any_instance_of(User).to receive(:destroy).and_return(false)
+        delete :destroy, params: { :id => user.id }
+        expect(flash[:error]).to eq(I18n.t 'destroy_failed')
+        expect(response).to redirect_to users_path
+      end
     end
   end
 end
