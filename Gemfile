@@ -38,7 +38,7 @@ gem 'nokogiri'
 gem 'oj'
 
 # requird until upgrade
-gem "ffi", "< 1.17.0"
+gem "ffi", "< 1.18.0"
 
 gem 'rails', '~> 7.0.0'
 
