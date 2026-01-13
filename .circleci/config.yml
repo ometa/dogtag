@@ -2,6 +2,9 @@
 version: 2.1
 orbs:
   ruby: circleci/ruby@2.6.0
+  node: circleci/node@6.3.0
+  browser-tools: circleci/browser-tools@1.4.8
+
 references:
   restore: &restore
     restore_cache:
@@ -16,6 +19,10 @@ references:
     run:
       name: Wait for Database
       command: dockerize -wait tcp://localhost:5432 -timeout 1m
+  wait_for_redis: &wait_for_redis
+    run:
+      name: Wait for Redis
+      command: dockerize -wait tcp://localhost:6379 -timeout 1m
   migrate: &migrate
     run:
        name: Database migration
@@ -61,7 +68,91 @@ jobs:
       - ruby/rspec-test
       - <<: *save
 
+  integration:
+    parameters:
+      ruby_version:
+        type: string
+        default: "3.4.8"
+    docker:
+      # Primary image with Ruby, Node, and browsers
+      - image: "cimg/ruby:<< parameters.ruby_version >>-browsers"
+      # PostgreSQL service
+      - image: cimg/postgres:17.0
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: dogtag_test
+          POSTGRES_PASSWORD: ""
+      # Redis service (for Sidekiq)
+      - image: cimg/redis:7.4
+    environment:
+      RAILS_ENV: test
+      BUNDLE_JOBS: "4"
+      BUNDLE_RETRY: "3"
+      PGHOST: 127.0.0.1
+      PGUSER: postgres
+      PGPASSWORD: ""
+      # Playwright config
+      CI: "true"
+      TEST_PORT: "3099"
+    steps:
+      - checkout
+
+      # Check if this is a forked PR (secrets not available)
+      - run:
+          name: Check for fork (skip if secrets unavailable)
+          command: |
+            if [ -z "$STRIPE_PUBLISHABLE_KEY" ]; then
+              echo "⚠️  Stripe credentials not available (likely a forked PR)"
+              echo "    Integration tests will be skipped for security."
+              echo "    These tests will run after the PR is merged."
+              circleci-agent step halt
+            fi
+            echo "✓ Stripe credentials available, proceeding with integration tests"
+
+      # Ruby dependencies
+      - <<: *restore
+      - <<: *bundle
+      - <<: *save
+
+      # Node dependencies
+      - node/install-packages:
+          pkg-manager: npm
+
+      # Install Playwright browsers
+      - run:
+          name: Install Playwright browsers
+          command: npx playwright install --with-deps chromium
+
+      # Wait for services
+      - <<: *wait_for_db
+      - <<: *wait_for_redis
+
+      # Setup database
+      - <<: *migrate
+
+      # Create .env file for Stripe credentials
+      - run:
+          name: Create .env file for Stripe
+          command: |
+            echo "STRIPE_PUBLISHABLE_KEY=$STRIPE_PUBLISHABLE_KEY" > .env
+            echo "STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY" >> .env
+
+      # Run Playwright tests
+      - run:
+          name: Run Playwright integration tests
+          command: npm test
+          no_output_timeout: 10m
+
+      # Store test artifacts
+      - store_artifacts:
+          path: playwright-report
+          destination: playwright-report
+      - store_artifacts:
+          path: test-results
+          destination: test-results
+
 workflows:
+  # Main workflow for all pushes and PRs
   all:
     jobs:
       - test:
@@ -69,3 +160,35 @@ workflows:
             parameters:
               ruby_version: ["3.4.8"]
               gemfile: ["Gemfile"]
+
+      # Integration tests run on PRs and main branch
+      # Uses context for Stripe credentials (not available for forked PRs)
+      - integration:
+          context: stripe-test-credentials
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - main
+                - /^pull\/.*/ # PR branches
+
+  # Nightly integration tests on main (for catching regressions)
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 6 * * *" # 6 AM UTC daily
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - test:
+          matrix:
+            parameters:
+              ruby_version: ["3.4.8"]
+              gemfile: ["Gemfile"]
+      - integration:
+          context: stripe-test-credentials
+          requires:
+            - test
