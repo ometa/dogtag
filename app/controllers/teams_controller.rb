@@ -113,10 +113,15 @@ class TeamsController < ApplicationController
     @team.update(team_params)
   end
 
-  # TODO: only allow delete if no payments
   def destroy
     @team = Team.find params[:id]
     @team.subscribe(TeamAuditor.new)
+
+    if @team.completed_requirements.any?
+      flash[:error] = I18n.t("teams.destroy.has_payments")
+      return redirect_to teams_path
+    end
+
     try_to_delete(@team, teams_path)
   end
 

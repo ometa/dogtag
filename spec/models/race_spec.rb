@@ -103,17 +103,29 @@ describe Race do
     end
   end
 
-  # TODO: this has to do with which jsonform question fields to show in the registrations
-  # rendering.  need confirmation & testing.
   describe '#filter_field_array' do
     context 'when filter_field is nil' do
-      it 'returns empty array'
+      let(:race) { FactoryBot.build :race, filter_field: nil }
+
+      it 'returns empty array' do
+        expect(race.filter_field_array).to eq([])
+      end
     end
+
     context 'when filter_field is blank' do
-      it 'returns empty array'
+      let(:race) { FactoryBot.build :race, filter_field: '' }
+
+      it 'returns empty array' do
+        expect(race.filter_field_array).to eq([])
+      end
     end
+
     context 'when filter_field contains comma-separated values' do
-      it 'returns array of values'
+      let(:race) { FactoryBot.build :race, filter_field: 'field1,field2,field3' }
+
+      it 'returns array of values' do
+        expect(race.filter_field_array).to eq(['field1', 'field2', 'field3'])
+      end
     end
   end
 
@@ -241,7 +253,12 @@ describe Race do
     end
 
     context 'race is right now' do
-      it 'returns false'
+      it 'returns false' do
+        Timecop.freeze do
+          race = FactoryBot.build :race, race_datetime: Time.zone.now
+          expect(race.over?).to be false
+        end
+      end
     end
   end
 
@@ -331,8 +348,30 @@ describe Race do
   end
 
   describe '#waitlisted_teams' do
-    it 'returns a list of team objects'
-    it 'returns them oldest first'
+    context 'when race is not full' do
+      let(:race) { FactoryBot.create :race }
+
+      it 'returns empty array' do
+        FactoryBot.create :team, race: race
+        expect(race.waitlisted_teams).to eq([])
+      end
+    end
+
+    context 'when race is full' do
+      let(:race) { FactoryBot.create :full_race }
+
+      it 'returns a list of team objects' do
+        waitlisted = FactoryBot.create :team, race: race
+        expect(race.waitlisted_teams).to eq([waitlisted])
+      end
+
+      it 'returns them oldest first' do
+        newer_team = FactoryBot.create :team, race: race, created_at: Time.zone.now
+        older_team = FactoryBot.create :team, race: race, created_at: 1.day.ago
+
+        expect(race.waitlisted_teams).to eq([older_team, newer_team])
+      end
+    end
   end
 
   describe '#stats' do

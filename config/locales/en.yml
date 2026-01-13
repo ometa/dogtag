@@ -156,6 +156,8 @@ en:
     index:
       title: People
       no_people_added: omg, you need to add racers!
+    destroy:
+      team_complete: Cannot remove a racer from a complete team. Please contact support if needed.
     form:
       experience: How many years has this person participated at Chiditarod?
       twitter: Got twitter? Please include the @ sign
@@ -258,6 +260,8 @@ en:
       waitlisted_instructions_html: "Your team has been placed on the waitlist! Note that did does <b>not</b> make you eligible to race, yet. You will receive an email shortly. If you do not receive an email within 2 hours, please contact us at: %{email}"
     update:
       edit_team: "Edit team for %{race_name}"
+    destroy:
+      has_payments: This team has completed requirements and cannot be deleted. Please contact support if you need to delete this team.
     table:
       exp: exp
       paid: paid

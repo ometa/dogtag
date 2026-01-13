@@ -19,8 +19,15 @@ class PeopleController < ApplicationController
 
   def destroy
     @person = Person.find params[:id]
+    @team = @person.team
+
+    if @team.meets_finalization_requirements?
+      flash[:error] = I18n.t("people.destroy.team_complete")
+      return redirect_to team_url(id: @team.id)
+    end
+
     @person.subscribe(PersonAuditor.new)
-    try_to_delete(@person, team_url(id: @person.team.id))
+    try_to_delete(@person, team_url(id: @team.id))
   end
 
   def update

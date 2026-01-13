@@ -154,12 +154,19 @@ class Team < ApplicationRecord
     jsonform.present?
   end
 
-  # TODO - finish this
   def waitlist_position
     # assume we are not on the waitlist if race is not full
     return false if race.not_full?
     # assume we are not on the waitlist if our requirements are met
     return false if finalized
+
+    # find all unfinalized teams for this race, ordered by created_at
+    waitlisted_teams = Team.all_unfinalized
+                           .where(race_id: race_id)
+                           .order(:created_at)
+                           .pluck(:id)
+
+    waitlisted_teams.index(id) + 1
   end
 
   private

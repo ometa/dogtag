@@ -168,7 +168,14 @@ describe TeamsController do
           it "assigns @myteams to the user's teams" do
             expect(assigns(:myteams)).to eq([valid_team])
           end
-          it 'sorts newest to oldest'
+
+          it 'sorts newest to oldest' do
+            older_team = FactoryBot.create :team, user: valid_user, created_at: 1.day.ago
+            newer_team = FactoryBot.create :team, user: valid_user, created_at: Time.zone.now
+            get :index
+            expect(assigns(:myteams)).to eq([newer_team, valid_team, older_team])
+          end
+
           include_examples 'no_race'
           include_examples 'is_http_success'
         end
@@ -183,7 +190,15 @@ describe TeamsController do
               expect(assigns(:race)).to eq(valid_team.race)
               expect(assigns :myteams).to eq([valid_team])
             end
-            it 'sorts newest to oldest'
+
+            it 'sorts newest to oldest' do
+              race = valid_team.race
+              older_team = FactoryBot.create :team, user: valid_user, race: race, created_at: 1.day.ago
+              newer_team = FactoryBot.create :team, user: valid_user, race: race, created_at: Time.zone.now
+              get :index, params: { :race_id => race.id }
+              expect(assigns(:myteams)).to eq([newer_team, valid_team, older_team])
+            end
+
             include_examples 'is_http_success'
           end
 
@@ -211,14 +226,7 @@ describe TeamsController do
       end
     end
 
-    describe '#jsonform' do
-      let(:the_user) { valid_user }
-
-      context 'when team_id is not found in db' do
-        it 'sets flash error'
-        it 'redirects to home page'
-      end
-    end
+    # Note: jsonform is handled by QuestionsController, not TeamsController
 
     describe '#edit' do
       # edit is aliased to show, so no need to spec.
@@ -425,9 +433,26 @@ describe TeamsController do
       end
 
       context 'when team has made payments' do
-        it 'does not allow deletion'
-        it 'sets the flash notice'
-        it 'redirects to the team index'
+        let(:team) { FactoryBot.create :team }
+        before do
+          FactoryBot.create :completed_requirement, team: team
+        end
+
+        it 'does not allow deletion' do
+          expect {
+            delete :destroy, params: { :id => team.id }
+          }.not_to change(Team, :count)
+        end
+
+        it 'sets the flash notice' do
+          delete :destroy, params: { :id => team.id }
+          expect(flash[:error]).to eq(I18n.t('teams.destroy.has_payments'))
+        end
+
+        it 'redirects to the team index' do
+          delete :destroy, params: { :id => team.id }
+          expect(response).to redirect_to(teams_path)
+        end
       end
     end
   end
