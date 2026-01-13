@@ -95,4 +95,9 @@ Rails.application.routes.draw do
   #     # (app/controllers/admin/products_controller.rb)
   #     resources :products
   #   end
+
+  # Catch-all route for unmatched paths - returns 404 without raising exception
+  # This prevents ActionController::RoutingError from being logged to Rollbar
+  # Must be last route in the file
+  match "*path", to: "errors#not_found", via: :all
 end
