@@ -17,12 +17,17 @@ class ClassyClient
 
   attr_reader :access_token, :token_type, :expires_at
 
-  API_HOST        = "https://api.classy.org"
-  API_VERSION     = "2.0"
-  DEFAULT_TIMEOUT = 3 # seconds
-  AUTH_ENDPOINT   = "#{API_HOST}/oauth2/auth"
-  BASE_HEADERS    = { 'User-Agent' => 'dogtag' }
-  API_HEADERS     = BASE_HEADERS.merge({ 'Content-type' => 'application/json' })
+  API_HOST              = "https://api.classy.org"
+  API_VERSION           = "2.0"
+  DEFAULT_TIMEOUT       = 3 # seconds
+  AUTH_ENDPOINT         = "#{API_HOST}/oauth2/auth"
+  BASE_HEADERS          = { 'User-Agent' => 'dogtag' }
+  API_HEADERS           = BASE_HEADERS.merge({ 'Content-type' => 'application/json' })
+
+  # Retry configuration
+  MAX_RETRIES           = 3
+  BASE_RETRY_DELAY      = 1 # seconds
+  RETRIABLE_STATUS_CODES = [502, 503, 504].freeze
 
   def initialize
     fetch_access_token!
@@ -215,19 +220,53 @@ class ClassyClient
   # for post, specify a body in args
   #
   # args - args to pass to http_client
+  #
+  # Includes retry logic with exponential backoff for:
+  # - HTTPClient timeout errors (ConnectTimeoutError, ReceiveTimeoutError, etc.)
+  # - Retriable HTTP status codes (502, 503, 504)
   def wrapper(verb, uri, args={})
     args[:header] = {} unless args[:header].present?
     args[:header]['User-Agent'] = 'dogtag'
     args[:follow_redirect] = true
 
-    http = HTTPClient.new
-    http.connect_timeout = DEFAULT_TIMEOUT
-    response = http.send(verb, "#{API_HOST}#{uri}", args)
+    retries = 0
+    begin
+      http = HTTPClient.new
+      http.connect_timeout = DEFAULT_TIMEOUT
+      response = http.send(verb, "#{API_HOST}#{uri}", args)
 
-    unless response.ok?
-      raise TransientError.new("#{response.status}: #{response.body}")
+      unless response.ok?
+        if retriable_status?(response.status) && retries < MAX_RETRIES
+          retries += 1
+          sleep_with_backoff(retries)
+          raise RetriableError.new("#{response.status}: #{response.body}")
+        end
+        raise TransientError.new("#{response.status}: #{response.body}")
+      end
+
+      JSON.parse(response.body)
+    rescue RetriableError
+      retry
+    rescue HTTPClient::TimeoutError
+      if retries < MAX_RETRIES
+        retries += 1
+        sleep_with_backoff(retries)
+        retry
+      end
+      raise
     end
-
-    JSON.parse(response.body)
   end
+
+  def retriable_status?(status)
+    RETRIABLE_STATUS_CODES.include?(status)
+  end
+
+  def sleep_with_backoff(retry_count)
+    # Exponential backoff with jitter: base_delay * 2^(retry-1) + random jitter
+    delay = BASE_RETRY_DELAY * (2 ** (retry_count - 1)) + rand(0.0..0.5)
+    sleep(delay)
+  end
+
+  # Internal error class used to trigger retry logic
+  class RetriableError < StandardError; end
 end
