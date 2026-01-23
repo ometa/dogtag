@@ -3,6 +3,9 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Secret key base for development (migrated from secrets.yml for Rails 7.2+)
+  config.secret_key_base = "0a7ea777eb9e0ad3c7809e3edf2d072ecd3f54d5db4935d8d74b3fe57d7ec61df1d091948f639c9a1e6d404b7d3fc0e80fcbdc05a214e51f1ec2d64480c39b45"
+
   # In the development environment your application's code is reloaded any time
   # it changes. This slows down response time but is perfect for development
   # since you don't have to restart the web server when you make code changes.

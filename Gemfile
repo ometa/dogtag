@@ -40,7 +40,7 @@ gem 'oj'
 # requird until upgrade
 gem "ffi", "< 1.18.0"
 
-gem 'rails', '~> 7.1.0'
+gem 'rails', '~> 7.2.0'
 
 # Use unicorn as the app server (heroku)
 gem 'unicorn'

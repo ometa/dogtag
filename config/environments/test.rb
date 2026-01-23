@@ -8,6 +8,9 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Secret key base for test (migrated from secrets.yml for Rails 7.2+)
+  config.secret_key_base = "c993ddec624cafd078cc7aeaf55df1814c67846beec99a30a1549f90451f00502de82633bcc3aead0c6360004e947b7f0426b591841d074358a65f590d4ea879"
+
   # Turn false under Spring and add config.action_view.cache_template_loading = true.
   config.cache_classes = true
 
