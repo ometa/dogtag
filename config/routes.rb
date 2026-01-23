@@ -7,6 +7,9 @@ Rails.application.routes.draw do
   # super basic static homepage text hack
   root :controller => 'homepages', :action => "index", :as => :home
 
+  # Handle non-GET requests to root (malicious traffic like androxgh0st scanners)
+  match "/", to: "errors#not_found", via: [:post, :put, :patch, :delete]
+
   resources :teams, :only => [:new, :create, :edit, :update, :index, :show, :destroy] do
     resources :people, :only => [:new, :create, :edit, :update, :destroy]
     resource :questions, :only => [:show, :create]
