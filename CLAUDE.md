@@ -288,6 +288,12 @@ git push heroku main
 # Run migrations on Heroku
 heroku run rails db:migrate
 heroku run rails db:migrate -a staging-app-name
+
+# Download a production database and then restore it locally
+# Useful for testing migrations:
+heroku pg:backups:capture --app dogtag
+curl -o file.dump `heroku pg:backups:url --app dogtag`
+pg_restore --verbose --clean --no-acl --no-owner -h localhost -d dogtag_development file.dump
 ```
 
 ## Known Quirks
