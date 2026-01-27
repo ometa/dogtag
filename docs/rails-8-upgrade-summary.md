@@ -3,10 +3,53 @@
 **Completed:** 2026-01-23
 **Upgraded From:** Rails 7.0.10 to Rails 8.0.4
 **Ruby Version:** 3.4.8
+**Branch:** `db/rails8`
+
+---
+
+## Current Status (for continuation)
+
+**Last Updated:** 2026-01-23
+
+### What's Done:
+- [x] Phase 0: Cleaned up 6 legacy framework defaults files
+- [x] Phase 1: Upgraded to Rails 7.1 (with deprecation fixes)
+- [x] Phase 2: Upgraded to Rails 7.2 (migrated secret_key_base)
+- [x] Phase 3: Upgraded to Rails 8.0 (updated test assertions)
+- [x] Added integration tests for user registration flow
+- [x] Added integration tests for password reset flow
+- [x] Verified no `alias_attribute` usage in codebase
+
+### Test Status:
+- **RSpec:** 618 tests pass (97.82% coverage)
+- **Playwright:** 5 tests pass (3 original + 2 new auth tests)
+
+### What Remains (Pre-Production):
+1. Test against production database backup locally (see Verification Checklist below)
+2. Deploy to staging and run manual smoke tests
+3. Deploy to production and monitor Rollbar
+
+### Git Commits on Branch:
+```
+46e00f2 Update Rails 8.0 upgrade summary with completed recommendations
+071baa0 Add Playwright integration tests for user registration and password reset
+5ea87a9 Add Rails 8.0 upgrade summary documentation
+512d2b0 Upgrade to Rails 8.0
+3f609f8 Upgrade to Rails 7.2
+c846a45 Upgrade to Rails 7.1
+254da37 Clean up legacy framework defaults files
+```
+
+### To Continue:
+1. Follow the **Verification Checklist** section below
+2. Address any issues found during staging deployment
+3. Monitor **Risks** section after production deployment
+
+---
 
 ## Overview
 
-The Dogtag application was successfully upgraded from Rails 7.0 to Rails 8.0 via incremental upgrades (7.0 → 7.1 → 7.2 → 8.0). All 618 RSpec tests pass with 97.82% coverage, and all 3 Playwright integration tests pass.
+The Dogtag application was successfully upgraded from Rails 7.0 to Rails 8.0 via incremental upgrades (7.0 → 7.1 → 7.2 → 8.0). All 618 RSpec tests pass with 97.82% coverage, and all 5 Playwright integration tests pass (including 2 new auth flow tests).
 
 ## Commits
 
@@ -14,6 +57,9 @@ The Dogtag application was successfully upgraded from Rails 7.0 to Rails 8.0 via
 2. `c846a45` - Upgrade to Rails 7.1
 3. `3f609f8` - Upgrade to Rails 7.2
 4. `512d2b0` - Upgrade to Rails 8.0
+5. `5ea87a9` - Add Rails 8.0 upgrade summary documentation
+6. `071baa0` - Add Playwright integration tests for user registration and password reset
+7. `46e00f2` - Update Rails 8.0 upgrade summary with completed recommendations
 
 ## Key Changes Made
 
