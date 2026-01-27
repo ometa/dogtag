@@ -9,7 +9,7 @@
 
 ## Current Status (for continuation)
 
-**Last Updated:** 2026-01-23
+**Last Updated:** 2026-01-27
 
 ### What's Done:
 - [x] Phase 0: Cleaned up 6 legacy framework defaults files
@@ -19,15 +19,15 @@
 - [x] Added integration tests for user registration flow
 - [x] Added integration tests for password reset flow
 - [x] Verified no `alias_attribute` usage in codebase
+- [x] Tested against production database backup locally
 
 ### Test Status:
 - **RSpec:** 618 tests pass (97.82% coverage)
 - **Playwright:** 5 tests pass (3 original + 2 new auth tests)
 
 ### What Remains (Pre-Production):
-1. Test against production database backup locally (see Verification Checklist below)
-2. Deploy to staging and run manual smoke tests
-3. Deploy to production and monitor Rollbar
+1. Deploy to staging and run manual smoke tests
+2. Deploy to production and monitor Rollbar
 
 ### Git Commits on Branch:
 ```
@@ -196,13 +196,10 @@ Rails 7.2 changed `alias_attribute` to bypass custom getter/setter methods.
 
 Before production deployment:
 
-- [ ] Test against production database backup locally:
-  ```bash
-  heroku pg:backups:capture --app dogtag
-  curl -o file.dump `heroku pg:backups:url --app dogtag`
-  pg_restore --verbose --clean --no-acl --no-owner -h localhost -d dogtag_development file.dump
-  bundle exec rails db:migrate
-  ```
+- [x] Test against production database backup locally (2026-01-27):
+  - RSpec: 618 tests pass (97.82% coverage)
+  - Playwright: 5 tests pass
+  - No pending migrations needed
 
 - [ ] Deploy to staging first:
   ```bash
