@@ -37,6 +37,7 @@ Per the Rails Upgrade Guide, we should upgrade incrementally:
    - Action: Ensure no code uses manual `require` for autoloaded files
 
 3. **Update autoload_lib configuration** (recommended)
+
    ```ruby
    # Replace current config:
    config.autoload_paths << Rails.root.join('lib')
@@ -109,21 +110,21 @@ A `new_framework_defaults_7_2.rb` file will be created.
 The following Rails 7.0 framework defaults in `config/initializers/new_framework_defaults_7_0.rb` should be reviewed and enabled before upgrading:
 
 ### High Priority (Enable Before Upgrade)
-- [ ] `button_to_generates_button_tag`
-- [ ] `apply_stylesheet_media_default`
-- [ ] `partial_inserts` (disabled by default in 7.0)
-- [ ] `raise_on_open_redirects`
-- [ ] `return_only_request_media_type_on_content_type`
+- [x] `button_to_generates_button_tag`
+- [x] `apply_stylesheet_media_default`
+- [x] `partial_inserts` (disabled by default in 7.0)
+- [x] `raise_on_open_redirects`
+- [x] `return_only_request_media_type_on_content_type`
 
 ### Medium Priority (Requires Data Migration)
-- [ ] `key_generator_hash_digest_class` - Requires cookie rotator
-- [ ] `hash_digest_class` - May invalidate caches/ETags
-- [ ] `cache_format_version` - Only after full deployment to 7.0
+- [x] `key_generator_hash_digest_class` - Requires cookie rotator
+- [x] `hash_digest_class` - May invalidate caches/ETags
+- [x] `cache_format_version` - Only after full deployment to 7.0
 
 ### Low Priority
-- [ ] `cookies_serializer` - Consider migrating to `:json` via `:hybrid`
-- [ ] `video_preview_arguments` - Only if using Active Storage video
-- [ ] `variant_processor` - Only if using Active Storage variants
+- [x] `cookies_serializer` - Migrated to `:json`
+- [x] `video_preview_arguments` - Only if using Active Storage video
+- [x] `variant_processor` - Only if using Active Storage variants
 
 ## Cleanup Tasks
 
