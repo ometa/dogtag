@@ -32,6 +32,7 @@ class ApplicationController < ActionController::Base
   # we always want these (including during tests)
   rescue_from ActiveRecord::RecordNotFound, :with => :render_not_found
   rescue_from ActionController::ParameterMissing, :with => :render_400
+  rescue_from ActionController::BadRequest, :with => :render_400
 
   def should_run_update_checker
     return false if params['controller'] == 'users' && %w(edit update).include?(params['action'])
