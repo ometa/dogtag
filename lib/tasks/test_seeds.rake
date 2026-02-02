@@ -3,6 +3,10 @@
 #   rails test_seeds:admin                     (create admin user only)
 #   rails test_seeds:basic                     (create full test environment using factories)
 #   rails test_seeds:payment_tiers             (create payment tiers test data)
+#   rails test_seeds:stripe_payment            (create Stripe payment test data)
+#   rails test_seeds:user_registration         (generate credentials for registration test)
+#   rails test_seeds:password_reset            (create user for password reset test)
+#   rails test_seeds:password_reset_token      (generate perishable token for password reset)
 #   rails test_seeds:cleanup                   (clean up all test data)
 
 namespace :test_seeds do
@@ -265,6 +269,97 @@ namespace :test_seeds do
     puts "  Team: #{team.name} (ID: #{team.id})"
     puts "  Team members: 5/5 (full team)"
     puts "  Payment: #{payment_req.name} - $50.00 (real Stripe)"
+    puts "  Credentials file: #{credentials_file}"
+  end
+
+  desc "Create user for password reset test"
+  task password_reset: :environment do
+    require 'factory_bot_rails'
+    require 'json'
+    require 'securerandom'
+
+    puts "🌱 Seeding password reset test..."
+
+    # Generate unique ID for credentials file (must be passed from Playwright for concurrency)
+    unique_id = ENV['TEST_UNIQUE_ID'] || SecureRandom.uuid
+    credentials_file = Rails.root.join('tmp', "test_credentials_#{unique_id}.json")
+
+    # Create user with known password
+    user = FactoryBot.create(:user,
+      first_name: "Reset",
+      last_name: "TestUser",
+      email: "reset-#{unique_id}@example.com",
+      password: "oldpassword123",
+      password_confirmation: "oldpassword123"
+    )
+
+    # Write credentials to unique temp file for Playwright tests
+    credentials = {
+      user_email: user.email,
+      old_password: "oldpassword123",
+      new_password: "newpassword456",
+      user_id: user.id
+    }
+    File.write(credentials_file, credentials.to_json)
+
+    puts "✅ Seeded!"
+    puts "  User: #{user.email} / oldpassword123"
+    puts "  Credentials file: #{credentials_file}"
+  end
+
+  desc "Generate perishable token for password reset test"
+  task password_reset_token: :environment do
+    require 'json'
+
+    unique_id = ENV['TEST_UNIQUE_ID']
+    unless unique_id
+      puts "ERROR: TEST_UNIQUE_ID environment variable required"
+      exit 1
+    end
+
+    credentials_file = Rails.root.join('tmp', "test_credentials_#{unique_id}.json")
+    credentials = JSON.parse(File.read(credentials_file))
+
+    user = User.find_by(email: credentials['user_email'])
+    unless user
+      puts "ERROR: User not found: #{credentials['user_email']}"
+      exit 1
+    end
+
+    # Reset the perishable token to get a fresh one
+    user.reset_perishable_token!
+
+    # Update credentials with token
+    credentials['perishable_token'] = user.perishable_token
+    File.write(credentials_file, credentials.to_json)
+
+    puts "✅ Perishable token generated: #{user.perishable_token}"
+  end
+
+  desc "Create credentials for user registration test (no database seeding needed)"
+  task user_registration: :environment do
+    require 'json'
+    require 'securerandom'
+
+    puts "🌱 Generating user registration test credentials..."
+
+    # Generate unique ID for credentials file (must be passed from Playwright for concurrency)
+    unique_id = ENV['TEST_UNIQUE_ID'] || SecureRandom.uuid
+    credentials_file = Rails.root.join('tmp', "test_credentials_#{unique_id}.json")
+
+    # Generate credentials for a new user (no database record yet)
+    credentials = {
+      first_name: "New",
+      last_name: "Registrant",
+      email: "newuser-#{unique_id}@example.com",
+      phone: "555-123-4567",
+      password: "securepass123"
+    }
+    File.write(credentials_file, credentials.to_json)
+
+    puts "✅ Credentials generated!"
+    puts "  Email: #{credentials[:email]}"
+    puts "  Password: #{credentials[:password]}"
     puts "  Credentials file: #{credentials_file}"
   end
 

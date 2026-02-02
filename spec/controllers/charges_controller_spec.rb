@@ -97,7 +97,7 @@ describe ChargesController do
           it "render a json error and returns bad request" do
             expect(response.status).to eq(400)
             json = JSON.parse(response.body)
-            expect(json['errors']).to eq("param is missing or the value is empty: #{param}")
+            expect(json['errors']).to eq("param is missing or the value is empty or invalid: #{param}")
           end
         end
       end

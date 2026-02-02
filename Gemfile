@@ -37,10 +37,8 @@ gem 'wisper-activerecord'
 gem 'nokogiri'
 gem 'oj'
 
-# requird until upgrade
-gem "ffi", "< 1.18.0"
 
-gem 'rails', '~> 7.0.0'
+gem 'rails', '~> 8.0.0'
 
 # Use unicorn as the app server (heroku)
 gem 'unicorn'

@@ -28,7 +28,7 @@ class CompletedRequirement < ApplicationRecord
   validates :requirement, uniqueness: { :scope => [:team], :allow_nil => true, :message => 'has already been completed for that team' }
 
   # todo: use postgres native json field type, here.
-  serialize :metadata, JSON
+  serialize :metadata, coder: JSON
 
   def metadata
     m = read_attribute :metadata
