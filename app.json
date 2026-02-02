@@ -1,0 +1,7 @@
+{
+  "name": "Dogtag",
+  "buildpacks": [
+    { "url": "heroku/nodejs" },
+    { "url": "heroku/ruby" }
+  ]
+}
