@@ -6,7 +6,7 @@ Dogtag is a Ruby on Rails application that manages user and team registration fo
 ## Tech Stack
 
 - **Ruby**: 3.4
-- **Rails**: 7
+- **Rails**: 8
 - **Database**: PostgreSQL 17
 - **Background Jobs**: Sidekiq with Redis
 - **Authentication**: Authlogic 6.x with SCrypt
@@ -305,6 +305,16 @@ pg_restore --verbose --clean --no-acl --no-owner -h localhost -d dogtag_developm
 3. **Rails 7 SMTP settings**: Uses an initializer (`config/initializers/smtp_settings.rb`) to work around a Rails 7 bug where smtp_settings get reset
 
 4. **Authlogic 6.x**: Password validations are explicit (not automatic) - see User model for the pattern
+
+## Technical Debt
+
+The following items were identified during the Rails 8 upgrade and should be addressed when time permits:
+
+1. **`stripe` gem (~> 1.58.0)**: Very outdated version from ~2017. Should be updated to modern stripe-ruby (v10+). This will require updating API calls throughout `lib/stripe_helper.rb` and payment-related code. Test thoroughly with `stripe-ruby-mock`.
+
+2. **`coffee-rails` gem**: CoffeeScript is deprecated. JavaScript assets should be migrated to ES6. Files to convert are in `app/assets/javascripts/`. Can be removed from Gemfile after migration.
+
+3. **`sass-rails` gem (~> 5.0)**: Consider migrating to modern CSS tooling (cssbundling-rails, Propshaft, or Dart Sass). Current stylesheets are in `app/assets/stylesheets/`.
 
 ## Testing External Services
 
