@@ -526,7 +526,6 @@ DEPENDENCIES
   csv
   dotenv-rails
   factory_bot_rails
-  ffi (< 1.18.0)
   haml
   haml-rails
   httpclient
