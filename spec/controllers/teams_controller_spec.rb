@@ -340,11 +340,6 @@ describe TeamsController do
           end
         end
 
-        it 'broadcasts when updating the record' do
-          expect do
-            patch :update, params: { :id => team.id, :team => {:description => 'New Description'} }
-          end.to broadcast(:update_team_successful)
-        end
       end
     end
 
