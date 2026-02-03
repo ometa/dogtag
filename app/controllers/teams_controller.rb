@@ -95,22 +95,18 @@ class TeamsController < ApplicationController
     @team.subscribe(TeamAuditor.new)
     @race = @team.race
 
-    @team.on(:update_team_successful) do |team|
-      if team.completed_questions?
+    if @team.update(team_params)
+      if @team.completed_questions?
         flash[:notice] = I18n.t('update_success')
-        redirect_to(team_path(team))
+        redirect_to(team_path(@team))
       else
         flash[:notice] = I18n.t('teams.update.success_fill_out_questions')
-        redirect_to(team_questions_path(team))
+        redirect_to(team_questions_path(@team))
       end
-    end
-
-    @team.on(:update_team_failed) do |team|
+    else
       flash.now[:error] = [I18n.t('update_failed')]
-      flash.now[:error] << team.errors.messages
+      flash.now[:error] << @team.errors.messages
     end
-
-    @team.update(team_params)
   end
 
   def destroy
