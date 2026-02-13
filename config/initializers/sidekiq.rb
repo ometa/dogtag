@@ -13,10 +13,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with dogtag.  If not, see <http://www.gnu.org/licenses/>.
-redis_url = ENV['REDIS_URL'] || "redis://127.0.0.1:6379/0"
+redis_url = ENV["REDIS_URL"] || "redis://127.0.0.1:6379/0"
+
+redis_config = {
+  url: redis_url,
+  ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE },
+  timeout: 5,
+  reconnect_attempts: [0, 0.05, 0.1]
+}
 
 Sidekiq.configure_server do |config|
-  config.redis = { url: redis_url, ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE } }
+  config.redis = redis_config
   config.client_middleware do |chain|
     chain.add SidekiqUniqueJobs::Middleware::Client
   end
@@ -27,7 +34,7 @@ Sidekiq.configure_server do |config|
 end
 
 Sidekiq.configure_client do |config|
-  config.redis = { url: redis_url, ssl_params: { verify_mode: OpenSSL::SSL::VERIFY_NONE } }
+  config.redis = redis_config
   config.client_middleware do |chain|
     chain.add SidekiqUniqueJobs::Middleware::Client
   end
