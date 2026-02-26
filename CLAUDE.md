@@ -1,7 +1,20 @@
-# Project Guidelines
 
 ## Project Overview
 Dogtag is a Ruby on Rails application that manages user and team registration for the annual CHIditarod urban shopping cart race and mobile food drive. It processes payments via Stripe, integrates with Classy for fundraising campaigns, and supports custom per-race survey questions via JSONForm.
+
+## Project Conventions
+
+- Always use sub-agents when exploring a project's context or structure.
+- Always use sub-agents and parallelism whenever it is safe to do so to increase throughput and reduce token use.
+- Always use Context7 MCP when you need library/API documentation, code generation, setup or configuration steps without user explicitly asking.
+- Always use Playwrite MCP when you need to verify UI changes without user explicitly asking.
+- Use dogtag (`../dogtag`) for Playwright integration test patterns ONLY — NOT for UI style, UX, or design inspiration.
+- Ensure the React app follows Bulletproof React standard (https://github.com/alan2207/bulletproof-react).
+- Put key learnings into CLAUDE.md after every iteration.
+- Once you finish a task, automatically commit all changes that your work made with a concise and descriptive message. ensure you do not commit changes that you did not make as part of that task.
+- When asking the user for permission to execute a command, additionally prompt to "Always allow" to remember their choice for the session. Do not re-ask for the same type of command.
+- NEVER run `git push` or try to open PRs. The user will push manually.
+- After finishing each task, review and update README.md if the task introduced new setup steps, commands, or changed how things work.
 
 ## Tech Stack
 
