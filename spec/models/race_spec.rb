@@ -269,9 +269,10 @@ describe Race do
     end
 
     it 'returns the time between now and registration_close' do
-      double(Time.zone.now) { today }
-      race = FactoryBot.create :race, :race_datetime => (today + 4.weeks), :registration_open => (today - 2.weeks), :registration_close => (today + 2.weeks)
-      expect(race.days_before_close).to eq(2.weeks.to_i)
+      Timecop.freeze do
+        race = FactoryBot.create :race, :race_datetime => (Time.zone.now + 4.weeks), :registration_open => (Time.zone.now - 2.weeks), :registration_close => (Time.zone.now + 2.weeks)
+        expect(race.days_before_close).to eq(2.weeks.to_i)
+      end
     end
   end
 
