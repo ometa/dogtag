@@ -18,11 +18,5 @@ describe TimeZoneHelper, type: :helper do
       expect(page.at_css("option[selected]")["value"]).to eq("America/Chicago")
       expect(page.at_css("option[selected]").text).to eq("(GMT-06:00) Central Time (US & Canada)")
     end
-
-    it "keeps a valid stored zone that is not in the list" do
-      page = Nokogiri::HTML.fragment(time_zone_options("US/Central"))
-
-      expect(page.at_css("option[selected]")["value"]).to eq("US/Central")
-    end
   end
 end

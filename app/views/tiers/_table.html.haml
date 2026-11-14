@@ -11,5 +11,5 @@
         = link_to(edit_tier_url tier) do
           .fa.fa-edit.fa-2x
       %td= price_in_dollars_and_cents tier.price
-      %td= human_readable(tier.requirement.race.local(tier.begin_at))
+      %td= human_readable(race.local(tier.begin_at))
       %td= button_to t('delete'), tier_url(tier), :method=>:delete,  :data => { :confirm => 'Are you sure?' }

@@ -33,9 +33,13 @@ class Race < ApplicationRecord
   # enter them and how racers see them.
   DEFAULT_TIME_ZONE = "America/Chicago".freeze
 
-  def self.valid_time_zone?(name)
-    name.is_a?(String) && name.present? && ActiveSupport::TimeZone[name]&.tzinfo&.name == name
+  # Only the IANA ids the admin select offers (Rails' zone list). Browsers'
+  # Intl knows all of them, so the SPA never silently falls back to Chicago.
+  def self.selectable_time_zones
+    @selectable_time_zones ||= ActiveSupport::TimeZone.all.map { |zone| zone.tzinfo.name }.to_set.freeze
   end
+
+  def self.valid_time_zone?(name) = selectable_time_zones.include?(name)
 
   # todo: validate filter_field based on contents of jsonform schema
 

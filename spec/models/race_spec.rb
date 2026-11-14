@@ -80,6 +80,11 @@ describe Race do
     it "is not valid with a Rails zone name instead of an IANA id" do
       expect(FactoryBot.build(:race, time_zone: "Central Time (US & Canada)")).not_to be_valid
     end
+
+    it "is not valid with a tz id the admin select does not offer" do
+      expect(FactoryBot.build(:race, time_zone: "Etc/GMT+6")).not_to be_valid
+      expect(FactoryBot.build(:race, time_zone: "US/Central")).not_to be_valid
+    end
   end
 
   describe "#time_zone" do

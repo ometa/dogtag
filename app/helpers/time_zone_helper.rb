@@ -21,7 +21,6 @@ module TimeZoneHelper
     us_ids = ActiveSupport::TimeZone.us_zones.map { |zone| zone.tzinfo.name }
     us, other = options.partition { |_label, iana, _data| us_ids.include?(iana) }
     us = us.sort_by { |label, iana| [-ActiveSupport::TimeZone[iana].utc_offset, label] }
-    other.unshift([selected, selected, { "data-zone-label" => time_zone_label(selected) }]) if Race.valid_time_zone?(selected) && options.none? { |_label, iana, _data| iana == selected }
     grouped_options_for_select({ "United States" => us, "Other" => other }, selected)
   end
 end

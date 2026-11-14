@@ -13,4 +13,4 @@
 - if @requirement.tiers.blank?
   = t ('.no_tiers_added')
 - else
-  = render 'tiers/table', :tiers => @requirement.tiers
+  = render 'tiers/table', :tiers => @requirement.tiers, :race => @requirement.race
