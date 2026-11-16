@@ -23,6 +23,34 @@ const focusableIn = (root: HTMLElement) =>
   Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE));
 
 /**
+ * Stops the page behind from scrolling (iOS Safari scrolls it under a fixed
+ * overlay otherwise). The scrollbar's width is padded back so the page does
+ * not shift sideways on desktops that show one. Returns the undo.
+ */
+function lockPageScroll(): () => void {
+  const root = document.documentElement;
+  const { body } = document;
+  const before = {
+    rootOverflow: root.style.overflow,
+    bodyOverflow: body.style.overflow,
+    bodyPadding: body.style.paddingRight,
+  };
+  // clientWidth is 0 where there is no layout (jsdom); skip the padding there.
+  const scrollbar = root.clientWidth > 0 ? window.innerWidth - root.clientWidth : 0;
+  root.style.overflow = 'hidden';
+  body.style.overflow = 'hidden';
+  if (scrollbar > 0) {
+    const padding = parseFloat(getComputedStyle(body).paddingRight) || 0;
+    body.style.paddingRight = `${padding + scrollbar}px`;
+  }
+  return () => {
+    root.style.overflow = before.rootOverflow;
+    body.style.overflow = before.bodyOverflow;
+    body.style.paddingRight = before.bodyPadding;
+  };
+}
+
+/**
  * Modal shell: a bottom sheet below `sm`, a centered dialog from `sm`.
  * Escape closes, Tab stays inside, and focus returns to whatever opened it.
  * A control inside that handles Escape itself (clearing a search, cancelling
@@ -43,6 +71,8 @@ export function DialogSheet({
   if (openerRef.current === null) {
     openerRef.current = document.activeElement as HTMLElement | null;
   }
+
+  useEffect(() => lockPageScroll(), []);
 
   useEffect(() => {
     const opener = openerRef.current;
@@ -88,7 +118,7 @@ export function DialogSheet({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-navy/50 sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-40 flex items-end justify-center overscroll-contain bg-navy/50 sm:items-center sm:p-4">
       <div
         ref={dialogRef}
         role="dialog"

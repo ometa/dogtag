@@ -78,6 +78,8 @@ export function CrewReview({
   const alertRef = useRef<HTMLDivElement>(null);
   // What a line held when Change opened it, so Escape can put it back.
   const beforeChange = useRef<Partial<Record<LineKey, BeforeChange>>>({});
+  // Read out when Enter in a still-blank input cannot finish its line.
+  const [notice, setNotice] = useState('');
   const errorText = formErrors.join('\n');
 
   useEffect(() => {
@@ -95,13 +97,18 @@ export function CrewReview({
   const setLine = (key: LineKey, state: Partial<LineState>) =>
     setLines((current) => ({ ...current, [key]: { ...current[key], ...state } }));
 
-  function finishLine(key: LineKey) {
+  /** False when the line is still blank and stays open. */
+  function finishLine(key: LineKey, announce: boolean): boolean {
     if (isLineBlank(key, draft)) {
-      setLine(key, { confirmed: false, error: missingMessage(key) });
-    } else {
-      delete beforeChange.current[key];
-      setLine(key, { confirmed: true, editing: false, error: null });
+      const message = missingMessage(key);
+      setLine(key, { confirmed: false, error: message });
+      // The same text twice in a row is not read again, so vary it invisibly.
+      if (announce) setNotice((now) => (now === message ? `${message}\u00a0` : message));
+      return false;
     }
+    delete beforeChange.current[key];
+    setLine(key, { confirmed: true, editing: false, error: null });
+    return true;
   }
 
   function changeLine(key: LineKey) {
@@ -166,7 +173,7 @@ export function CrewReview({
           </Button>
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4">
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4">
         <div className="grid grid-cols-[minmax(0,1fr)] gap-2 pb-3.5">
           {LINE_KEYS.map((key) => (
             <ReviewLine
@@ -186,7 +193,7 @@ export function CrewReview({
                 }))
               }
               onChange={() => changeLine(key)}
-              onDone={() => finishLine(key)}
+              onDone={(announce) => finishLine(key, announce)}
               onCancel={() => cancelLine(key)}
             />
           ))}
@@ -222,6 +229,9 @@ export function CrewReview({
         <Button variant="ghost" disabled={pending} onClick={onSkip}>
           {t('roster.skip', { name: firstName })}
         </Button>
+        <p role="status" className="sr-only">
+          {notice}
+        </p>
         <p aria-live="polite" className="m-0 basis-full text-sm text-navy/70">
           {left === 0
             ? t('roster.allConfirmed')
@@ -256,7 +266,8 @@ interface ReviewLineProps {
   onDraft: (field: keyof PersonDraft, value: string) => void;
   onToggle: () => void;
   onChange: () => void;
-  onDone: () => void;
+  /** False when the line is still blank; `announce` reads that out. */
+  onDone: (announce: boolean) => boolean;
   /** Escape in an open editor; false when the line cannot be put back. */
   onCancel: () => boolean;
 }
@@ -294,9 +305,21 @@ function ReviewLine({
   }, [state.editing]);
 
   if (state.editing) {
-    const done = () => {
+    // From the Done button, a blank line sends focus to its empty input, which
+    // reads its label and error. From Enter, focus is already there, so the
+    // review reads the error out instead.
+    const done = (via: 'button' | 'enter') => {
       pressedDone.current = true;
-      onDone();
+      if (onDone(via === 'enter')) return;
+      pressedDone.current = false;
+      if (via === 'button') {
+        const controls = Array.from(
+          editorRef.current?.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+            'input, select',
+          ) ?? [],
+        );
+        (controls.find((control) => !control.value.trim()) ?? controls[0])?.focus();
+      }
     };
     return (
       <div
@@ -304,7 +327,7 @@ function ReviewLine({
         onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
           if (event.key === 'Enter' && event.target instanceof HTMLInputElement) {
             event.preventDefault();
-            done();
+            done('enter');
           }
           // Escape backs out of this change only; the dialog stays open.
           if (event.key === 'Escape' && !event.nativeEvent.isComposing) {
@@ -322,7 +345,7 @@ function ReviewLine({
           error={state.error}
           onDraft={onDraft}
         />
-        <Button variant="secondary" className="justify-self-start" onClick={done}>
+        <Button variant="secondary" className="justify-self-start" onClick={() => done('button')}>
           {t('roster.done')}
         </Button>
       </div>

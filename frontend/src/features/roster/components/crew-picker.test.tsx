@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -95,7 +95,7 @@ function setup(props: Partial<Parameters<typeof CrewPicker>[0]> = {}) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  render(
+  const { unmount } = render(
     <QueryClientProvider client={queryClient}>
       <button type="button">Page behind</button>
       <CrewPicker
@@ -109,7 +109,7 @@ function setup(props: Partial<Parameters<typeof CrewPicker>[0]> = {}) {
       />
     </QueryClientProvider>,
   );
-  return { user, onAdded, onForbidden, onClose };
+  return { user, onAdded, onForbidden, onClose, unmount };
 }
 
 const row = (name: string) => screen.getByRole('checkbox', { name: new RegExp(`^${name}`) });
@@ -226,6 +226,15 @@ describe('pick step', () => {
     expect(row('Edsger')).toHaveFocus();
   });
 
+  it('stops the page behind from scrolling while open', () => {
+    const { unmount } = setup();
+    expect(document.documentElement.style.overflow).toBe('hidden');
+    expect(document.body.style.overflow).toBe('hidden');
+    unmount();
+    expect(document.documentElement.style.overflow).toBe('');
+    expect(document.body.style.overflow).toBe('');
+  });
+
   it('closes on Escape and on Close', async () => {
     const { user, onClose } = setup();
     await user.keyboard('{Escape}');
@@ -333,11 +342,29 @@ describe('review step', () => {
 
     await user.click(screen.getByRole('button', { name: 'Done' }));
     expect(screen.getByText('Phone is missing. Add it to continue.')).toBeInTheDocument();
+    // Focus goes to the empty input, whose description is the error.
+    expect(phone).toHaveFocus();
+    expect(phone).toHaveAccessibleDescription('Phone is missing. Add it to continue.');
 
     await user.type(phone, '3125550113');
     await user.click(screen.getByRole('button', { name: 'Done' }));
     expect(line('Phone')).toBeChecked();
     expect(line('Phone')).toHaveAccessibleName('Phone: (312) 555-0113');
+  });
+
+  it('reads out the missing message each time Enter cannot finish a blank line', async () => {
+    const { user } = setup();
+    await reviewOne(user, 'Edsger');
+    const phone = screen.getByRole('textbox', { name: 'Phone' });
+    const notice = within(screen.getByRole('dialog')).getAllByRole('status')[0];
+    expect(notice).toHaveTextContent('');
+
+    await user.click(phone);
+    await user.keyboard('{Enter}');
+    expect(notice.textContent).toBe('Phone is missing. Add it to continue.');
+    await user.keyboard('{Enter}');
+    expect(notice.textContent).toBe('Phone is missing. Add it to continue.\u00a0');
+    expect(phone).toHaveFocus();
   });
 
   it('keeps the years line open until something is chosen', async () => {

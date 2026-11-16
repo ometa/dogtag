@@ -106,7 +106,7 @@ export function CrewPickList({
           />
         </div>
       )}
-      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-4">
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-4">
         <ul className="divide-y divide-flag/50">
           {matches.map((racer) => {
             const on = picked.includes(racer.email);
