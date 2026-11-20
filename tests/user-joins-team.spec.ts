@@ -126,9 +126,8 @@ test.describe('User Registration and Team Finalization', () => {
       await visibleInputs.nth(2).fill(fifthPerson.email); // Email
       await visibleInputs.nth(3).fill(fifthPerson.phone); // Mobile Phone
 
-      // Select experience level (years participated)
-      const experienceSelect = page.locator('select').first();
-      await experienceSelect.selectOption({ index: 1 }); // Select first option after "Please Select"
+      // Years racing is a number field (#330)
+      await page.locator('#person_experience').fill('1');
 
       // Submit the form to add the person to the team
       await page.getByRole('button', { name: /save|submit|add|create/i }).click();

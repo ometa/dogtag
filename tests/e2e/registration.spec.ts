@@ -151,7 +151,7 @@ test('B: a new captain registers a team through "You\'re in!"', async ({ page, r
       await form.getByLabel('Last name').fill('Pusher');
       await form.getByLabel('Email', { exact: true }).fill(`racer${i}-${id}@example.com`);
       await form.getByLabel('Phone').pressSequentially('3125550144');
-      await form.getByLabel('Years racing', { exact: true }).selectOption({ index: 2 });
+      await form.getByLabel('Years racing', { exact: true }).fill('2');
       await form.getByRole('button', { name: 'Save' }).click();
       await expect(racers.getByText(`Racer${i} Pusher`, { exact: true })).toBeVisible();
     }
